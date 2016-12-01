@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "module": "umd",
+        "target": "es3",
+        "outDir": "build",
+        "noImplicitAny": true,
+        "strictNullChecks": true
+    },
+    "include": [
+        "src/**/*",
+        "test/**/*"
+    ]
+}

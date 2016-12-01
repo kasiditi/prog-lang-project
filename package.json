@@ -1,0 +1,33 @@
+{
+  "name": "prog-lang-project",
+  "version": "1.0.0",
+  "description": "A simple parser for my own verbal language.",
+  "main": "index.js",
+  "scripts": {
+    "tsc": "tsc",
+    "tsc:w": "tsc -w",
+    "build:dist": "tsc -p tsconfig-dist.json && rollup --config rollup.config.js && uglifyjs --compress --output ./dist/compiler.min.js --mangle -- ./dist/compiler.js",
+    "test": "concurrently \"npm run tsc:w\" \"nodemon --delay 1000ms build/test/main.js\"",
+    "test:o": "npm run tsc && node build/test/main",
+    "coverage": "istanbul cover build/test/main.js"
+  },
+  "author": "Kasidit Iamthong",
+  "license": "MIT",
+  "dependencies": {
+    "monaco-editor": "^0.7.0"
+  },
+  "devDependencies": {
+    "@types/core-js": "^0.9.34",
+    "@types/jasmine": "^2.5.38",
+    "@types/systemjs": "^0.19.31",
+    "concurrently": "^3.1.0",
+    "core-js": "^2.4.1",
+    "jasmine": "^2.5.2",
+    "jasmine-core": "^2.5.2",
+    "nodemon": "^1.11.0",
+    "rollup": "^0.36.4",
+    "systemjs": "^0.19.41",
+    "tslint": "^4.0.2",
+    "typescript": "^2.0.10"
+  }
+}

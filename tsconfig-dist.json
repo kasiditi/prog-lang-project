@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json.schemastore.org/tsconfig",
+    "compilerOptions": {
+        "module": "es2015",
+        "target": "es3",
+        "outDir": "build",
+        "noImplicitAny": true,
+        "strictNullChecks": true
+    },
+    "include": [
+        "src/**/*"
+    ]
+}

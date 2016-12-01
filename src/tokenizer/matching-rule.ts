@@ -1,0 +1,53 @@
+import { TokenType } from './token-type';
+
+export interface MatchingRule {
+    matcher: string;
+    tokenType: TokenType;
+}
+
+export const MATCHING_RULES: MatchingRule[] = [
+    { matcher: 'plus', tokenType: TokenType.Plus },
+    { matcher: 'and', tokenType: TokenType.And },
+    { matcher: 'as', tokenType: TokenType.As },
+    { matcher: 'boolean', tokenType: TokenType.VariableTypeBoolean },
+    { matcher: 'but if', tokenType: TokenType.ButIf },
+    { matcher: 'by', tokenType: TokenType.By },
+    { matcher: 'comma', tokenType: TokenType.Comma },
+    { matcher: 'decrease', tokenType: TokenType.Decrease },
+    { matcher: 'define function', tokenType: TokenType.FunctionDeclaration },
+    { matcher: 'define variable', tokenType: TokenType.VariableDeclaration },
+    { matcher: 'divide', tokenType: TokenType.Divide },
+    { matcher: 'do', tokenType: TokenType.Do },
+    { matcher: 'end of for', tokenType: TokenType.EndOfFor },
+    { matcher: 'end of function', tokenType: TokenType.EndOfFunction },
+    { matcher: 'end of if', tokenType: TokenType.EndOfIf },
+    { matcher: 'end of while', tokenType: TokenType.EndOfWhile },
+    { matcher: 'equal to', tokenType: TokenType.EqualTo },
+    { matcher: 'false', tokenType: TokenType.BooleanValueFalse },
+    { matcher: 'for', tokenType: TokenType.For },
+    { matcher: 'from', tokenType: TokenType.From },
+    { matcher: 'greater than or equal to', tokenType: TokenType.GreaterThanOrEqualTo },
+    { matcher: 'greater than', tokenType: TokenType.GreaterThan },
+    { matcher: 'if', tokenType: TokenType.If },
+    { matcher: 'increase', tokenType: TokenType.Increase },
+    { matcher: 'initialized to', tokenType: TokenType.InitializedTo },
+    { matcher: 'less than or equal to', tokenType: TokenType.LessThanOrEqualTo },
+    { matcher: 'less than', tokenType: TokenType.LessThan },
+    { matcher: 'minus', tokenType: TokenType.Minus },
+    { matcher: 'modulo', tokenType: TokenType.Modulo },
+    { matcher: 'multiply', tokenType: TokenType.Multiply },
+    { matcher: 'mutable', tokenType: TokenType.Mutable },
+    { matcher: 'not equal to', tokenType: TokenType.NotEqualTo },
+    { matcher: 'not', tokenType: TokenType.Not },
+    { matcher: 'number', tokenType: TokenType.VariableTypeNumber },
+    { matcher: 'or', tokenType: TokenType.Or },
+    { matcher: 'otherwise', tokenType: TokenType.Otherwise },
+    { matcher: 'print', tokenType: TokenType.Print },
+    { matcher: 'set', tokenType: TokenType.Set },
+    { matcher: 'string', tokenType: TokenType.VariableTypeString },
+    { matcher: 'to', tokenType: TokenType.To },
+    { matcher: 'to be', tokenType: TokenType.ToBe },
+    { matcher: 'true', tokenType: TokenType.BooleanValueTrue },
+    { matcher: 'while', tokenType: TokenType.While },
+    { matcher: 'with param', tokenType: TokenType.WithParam },
+];

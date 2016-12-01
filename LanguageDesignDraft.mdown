@@ -1,0 +1,169 @@
+# Language Design
+
+## Names
+
+_variableName_ -> [a-zA-Z0-9-_]+
+
+_functionName_ -> [a-zA-Z0-9-_]+
+
+_numberValue_ -> -?([0-9]+|[0-9]*(.[0-9]+)?)
+
+_stringValue_ -> "[^"]*"
+
+_stringValue_ -> '[^']*'
+
+_stringValue_ -> \`[^\`]*\`
+
+_booleanValue_ -> true
+
+_booleanValue_ -> false
+
+## Variable Declaration
+
+_variableType_ -> number
+
+_variableType_ -> boolean
+
+_variableType_ -> string
+
+_variableTypeProperty_ -> _variableType_
+
+_variableTypeProperty_ -> mutable _variableType_
+
+_variableInitialValueProperty_ -> equal to _expression_
+
+_variableInitialValueProperty_ -> initialized to _expression_
+
+_variableProperties_ -> _variableTypeProperty_
+
+_variableProperties_ -> _variableInitialValueProperty_
+
+_variableProperties_ -> _variableTypeProperty_ _variableInitialValueProperty_
+
+_variableDeclaration_ -> Define variable _variableName_ to be _variableProperties_
+
+## Assignment Declaration
+
+_assignment_ -> Set _variableName_ to be _expression_
+
+_increment_ -> Increase _variableName_ by _expression_
+
+_decrement_ -> Decrease _variableName_ by _expression_
+
+## Print
+
+_print_ -> Print _expression_
+
+## Control Flow
+
+_ifConditionAndStatements_ -> _condition_ do _statements_
+
+_butIfCondition_ -> but if _ifConditionAndStatements_
+
+_butIfConditionChain_ -> _butIfCondition_ _butIfConditionChain_
+
+_butIfConditionChain_ -> EPSILON
+
+_ifCondition_ -> If _ifConditionAndStatements_ _butIfConditionChain_ End of if
+
+_ifCondition_ -> If _ifConditionAndStatements_ _butIfConditionChain_ Otherwise do _statements_ End of if
+
+_whileLoop_ -> While _condition_ do _statements_ End of while
+
+_forLoop_ -> For _variable_ from _expression_ to _expression_ do _statements_ End of for
+
+## Function
+
+_param_ -> _variableName_ as _variableTypeProperty_
+
+_paramsChain_ -> _param_
+
+_paramsChain_ -> _paramsChain_, _param_
+
+_functionParams_ -> with param _paramsChain_
+
+_functionParams_ -> EPSILON
+
+_functionDeclaration_ -> Define function _functionName_ _functionParams_ do _statements_ End of function
+
+## Expression
+
+### Basic Expression
+
+_expression_atom_ -> _variableName_
+
+_expression_atom_ -> _numberValue_
+
+_expression_atom_ -> _stringValue_
+
+_expression_atom_ -> _booleanValue_
+
+### Comparison Expression
+
+_expression_ -> _expression_atom_ greater than _expression_
+
+_expression_ -> _expression_atom_ less than _expression_
+
+_expression_ -> _expression_atom_ greater than or equal to _expression_
+
+_expression_ -> _expression_atom_ less than or equal to _expression_
+
+_expression_ -> _expression_atom_ equal to _expression_
+
+_expression_ -> _expression_atom_ not equal to _expression_
+
+### Logic Expression
+
+_expression_ -> not _expression_
+
+_expression_ -> _expression_atom_ and _expression_
+
+_expression_ -> _expression_atom_ or _expression_
+
+### Numeric Expression
+
+_expression_ -> _expression_atom_ plus _expression_
+
+_expression_ -> _expression_atom_ minus _expression_
+
+_expression_ -> _expression_atom_ multiply _expression_
+
+_expression_ -> _expression_atom_ divide _expression_
+
+_expression_ -> _expression_atom_ modulo _expression_
+
+### Condition alias
+
+_condition_ -> _expression_
+
+## Statements
+
+_statement_ -> _variableDeclaration_
+
+_statement_ -> _assignment_
+
+_statement_ -> _increment_
+
+_statement_ -> _decrement_
+
+_statement_ -> _multiply_
+
+_statement_ -> _divide_
+
+_statement_ -> _print_
+
+_statement_ -> _ifCondition_
+
+_statement_ -> _whileLoop_
+
+_statement_ -> _forLoop_
+
+_statements_ -> _statement_ _statements_
+
+## Program
+
+_program_ -> _functionDeclaration_ _program_
+
+_program_ -> _statements_ _program_
+
+_program_ -> EPSILON
