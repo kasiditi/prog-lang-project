@@ -66,6 +66,11 @@ export interface ASTFunctionCall {
     resultTarget: string | undefined;
 }
 
+export interface ASTFunctionReturn {
+    type: 'FunctionReturn';
+    returnValue: ASTExpression;
+}
+
 export type ASTStatement =
     ASTVariableDeclaration |
     ASTAssignmentSet |
@@ -75,4 +80,5 @@ export type ASTStatement =
     ASTIfBlock |
     ASTWhileBlock |
     ASTForBlock |
-    ASTFunctionCall;
+    ASTFunctionCall |
+    ASTFunctionReturn;

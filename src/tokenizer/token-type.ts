@@ -35,6 +35,7 @@ export enum TokenType {
     Or,
     Otherwise,
     Print,
+    Return,
     Set,
     ThatReturn,
     ThenPutResultInto,

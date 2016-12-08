@@ -88,19 +88,20 @@ var TokenType;
     TokenType[TokenType["Or"] = 33] = "Or";
     TokenType[TokenType["Otherwise"] = 34] = "Otherwise";
     TokenType[TokenType["Print"] = 35] = "Print";
-    TokenType[TokenType["Set"] = 36] = "Set";
-    TokenType[TokenType["ThatReturn"] = 37] = "ThatReturn";
-    TokenType[TokenType["ThenPutResultInto"] = 38] = "ThenPutResultInto";
-    TokenType[TokenType["To"] = 39] = "To";
-    TokenType[TokenType["ToBe"] = 40] = "ToBe";
-    TokenType[TokenType["VariableDeclaration"] = 41] = "VariableDeclaration";
-    TokenType[TokenType["InitializedTo"] = 42] = "InitializedTo";
-    TokenType[TokenType["VariableTypeBoolean"] = 43] = "VariableTypeBoolean";
-    TokenType[TokenType["VariableTypeNumber"] = 44] = "VariableTypeNumber";
-    TokenType[TokenType["VariableTypeString"] = 45] = "VariableTypeString";
-    TokenType[TokenType["While"] = 46] = "While";
-    TokenType[TokenType["WithParam"] = 47] = "WithParam";
-    TokenType[TokenType["WithArg"] = 48] = "WithArg";
+    TokenType[TokenType["Return"] = 36] = "Return";
+    TokenType[TokenType["Set"] = 37] = "Set";
+    TokenType[TokenType["ThatReturn"] = 38] = "ThatReturn";
+    TokenType[TokenType["ThenPutResultInto"] = 39] = "ThenPutResultInto";
+    TokenType[TokenType["To"] = 40] = "To";
+    TokenType[TokenType["ToBe"] = 41] = "ToBe";
+    TokenType[TokenType["VariableDeclaration"] = 42] = "VariableDeclaration";
+    TokenType[TokenType["InitializedTo"] = 43] = "InitializedTo";
+    TokenType[TokenType["VariableTypeBoolean"] = 44] = "VariableTypeBoolean";
+    TokenType[TokenType["VariableTypeNumber"] = 45] = "VariableTypeNumber";
+    TokenType[TokenType["VariableTypeString"] = 46] = "VariableTypeString";
+    TokenType[TokenType["While"] = 47] = "While";
+    TokenType[TokenType["WithParam"] = 48] = "WithParam";
+    TokenType[TokenType["WithArg"] = 49] = "WithArg";
 })(TokenType || (TokenType = {}));
 
 var MATCHING_RULES = [
@@ -141,6 +142,7 @@ var MATCHING_RULES = [
     { matcher: 'number', tokenType: TokenType.VariableTypeNumber },
     { matcher: 'or', tokenType: TokenType.Or },
     { matcher: 'otherwise', tokenType: TokenType.Otherwise },
+    { matcher: 'return', tokenType: TokenType.Return },
     { matcher: 'print', tokenType: TokenType.Print },
     { matcher: 'set', tokenType: TokenType.Set },
     { matcher: 'string', tokenType: TokenType.VariableTypeString },
@@ -287,8 +289,12 @@ var TokenMatcherImpl = (function () {
         var token = this.sourceCode.slice(startPos, endPos);
         for (var _i = 0, _a = this.matchingRules; _i < _a.length; _i++) {
             var rule = _a[_i];
-            if (rule.matcher === token.toLowerCase()) {
-                throw this.makeError(startPos, "Unexpected identifier \"" + token + "\".");
+            var tokenLowercase = token.toLowerCase();
+            var matcher = rule.matcher;
+            if (matcher === tokenLowercase || (matcher.substr(0, token.length) === tokenLowercase &&
+                matcher.length > token.length &&
+                matcher.charAt(token.length) === ' ')) {
+                throw this.makeError(startPos, "Unexpected reserved word \"" + token + "\".");
             }
         }
         return {
@@ -309,7 +315,7 @@ var TokenMatcherImpl = (function () {
             return false;
         }
     };
-    TokenMatcherImpl.prototype.extractStringLiteral = function () {
+    TokenMatcherImpl.prototype.extractStringLiteralIfAny = function () {
         this.expectedErrorReportSet.clear();
         var startPos = this.getNextNonWhitespacePosition();
         if (this.isEndOfFile(startPos)) {
@@ -371,7 +377,8 @@ var STATEMENT_FIRST_SET = [
     TokenType.If,
     TokenType.While,
     TokenType.For,
-    TokenType.FunctionCall
+    TokenType.FunctionCall,
+    TokenType.Return
 ];
 var PROGRAM_FIRST_SET = STATEMENT_FIRST_SET.concat([TokenType.FunctionDeclaration, TokenType.EndOfFile]);
 var VARIABLE_TYPE_FIRST_SET = [
@@ -388,10 +395,10 @@ var OPERATOR_WITH_TWO_OPERANDS_FIRST_SET = [
     TokenType.And,
     TokenType.Divide,
     TokenType.EqualTo,
-    TokenType.GreaterThan,
     TokenType.GreaterThanOrEqualTo,
-    TokenType.LessThan,
+    TokenType.GreaterThan,
     TokenType.LessThanOrEqualTo,
+    TokenType.LessThan,
     TokenType.Minus,
     TokenType.Modulo,
     TokenType.Multiply,
@@ -470,47 +477,43 @@ var Parser = (function () {
         var boolToken = this.tokenizer.peekNextTokenType(BOOLEAN_VALUE_FIRST_SET);
         if (boolToken !== false) {
             this.tokenizer.extractTokenType(BOOLEAN_VALUE_FIRST_SET);
-            var atom_1 = {
+            var atom = {
                 type: 'ExpressionAtom',
                 atomType: 'Boolean',
                 value: boolToken === TokenType.BooleanValueTrue
             };
-            return atom_1;
-        }
-        var token = this.tokenizer.peekNextTokenAsString();
-        if (token !== false) {
-            // Check for number
-            if (/^-?([0-9]*\.[0-9]+|[0-9]+)$/.test(token)) {
-                this.tokenizer.extractNextTokenAsString();
-                var atom_2 = {
-                    type: 'ExpressionAtom',
-                    atomType: 'Number',
-                    value: token
-                };
-                return atom_2;
-            }
-            // Check for variable name
-            if (VARIABLE_NAME_REG_EXP.test(token)) {
-                this.tokenizer.extractNextTokenAsString();
-                var atom_3 = {
-                    type: 'ExpressionAtom',
-                    atomType: 'Variable',
-                    variableName: token
-                };
-                return atom_3;
-            }
+            return atom;
         }
         // Check for string
-        var tokenStr = this.tokenizer.extractStringLiteral();
-        if (tokenStr === false) {
-            throw new Error('Invalid expression.');
+        var tokenStr = this.tokenizer.extractStringLiteralIfAny();
+        if (tokenStr !== false) {
+            var atom = {
+                type: 'ExpressionAtom',
+                atomType: 'String',
+                value: tokenStr
+            };
+            return atom;
         }
-        var atom = {
-            type: 'ExpressionAtom',
-            atomType: 'String',
-            value: tokenStr
-        };
-        return atom;
+        var token = this.tokenizer.extractNextTokenAsString();
+        // Check for number
+        if (/^-?([0-9]*\.[0-9]+|[0-9]+)$/.test(token)) {
+            var atom = {
+                type: 'ExpressionAtom',
+                atomType: 'Number',
+                value: token
+            };
+            return atom;
+        }
+        // Check for variable name
+        if (VARIABLE_NAME_REG_EXP.test(token)) {
+            var atom = {
+                type: 'ExpressionAtom',
+                atomType: 'Variable',
+                variableName: token
+            };
+            return atom;
+        }
+        throw new Error('Invalid expression.');
     };
     Parser.prototype.createExpression = function () {
         // One Operands
@@ -776,6 +779,12 @@ var Parser = (function () {
             resultTarget: targetVariableName
         };
     };
+    Parser.prototype.createReturnStatement = function () {
+        return {
+            type: 'FunctionReturn',
+            returnValue: this.createExpression()
+        };
+    };
     Parser.prototype.createStatements = function () {
         var statements = [];
         while (true) {
@@ -790,9 +799,6 @@ var Parser = (function () {
         return statements;
     };
     Parser.prototype.createStatement = function (statementType) {
-        if (statementType === undefined) {
-            statementType = this.tokenizer.extractTokenType(STATEMENT_FIRST_SET);
-        }
         switch (statementType) {
             case TokenType.VariableDeclaration:
                 return this.createVariableDeclaration();
@@ -810,6 +816,8 @@ var Parser = (function () {
                 return this.createForLoop();
             case TokenType.FunctionCall:
                 return this.createFunctionCall();
+            case TokenType.Return:
+                return this.createReturnStatement();
         }
         throw this.createErrorInvalidToken(statementType);
     };

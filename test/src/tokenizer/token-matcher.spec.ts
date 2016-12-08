@@ -84,13 +84,13 @@ describe('TokenMatcher', () => {
 
     it('should be able to extract string literal correctly', () => {
         const uut = new TokenMatcherImpl('"hello" \'world\'    `again`');
-        expect(uut.extractStringLiteral()).toBe('hello');
-        expect(uut.extractStringLiteral()).toBe('world');
-        expect(uut.extractStringLiteral()).toBe('again');
-        expect(uut.extractStringLiteral()).toBe(false);
+        expect(uut.extractStringLiteralIfAny()).toBe('hello');
+        expect(uut.extractStringLiteralIfAny()).toBe('world');
+        expect(uut.extractStringLiteralIfAny()).toBe('again');
+        expect(uut.extractStringLiteralIfAny()).toBe(false);
 
         const uut2 = new TokenMatcherImpl('"abc" define variable');
-        expect(uut2.extractStringLiteral()).toBe('abc');
+        expect(uut2.extractStringLiteralIfAny()).toBe('abc');
         expect(uut2.extractTokenType([TokenType.VariableDeclaration])).toBe(TokenType.VariableDeclaration);
         expect(uut2.extractTokenType([TokenType.EndOfFile])).toBe(TokenType.EndOfFile);
     });

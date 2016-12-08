@@ -1,24 +1,44 @@
 require.config({
     paths: {
         'vs': '../node_modules/monaco-editor/min/vs',
-        'compiler': '../dist/compiler.min'
+        'compiler': '../dist/compiler'
     }
 });
 require(['compiler', 'vs/editor/editor.main'], function (Compiler) {
     var editor = monaco.editor.create(document.getElementById('editor_container'), {
         value: [
-            'Define variable sum to be mutable number initialized to 0',
+            'DEFINE FUNCTION fibonacci WITH PARAM',
+            '    n AS NUMBER',
+            'THAT RETURN NUMBER',
+            'DO',
+            '    IF n LESS THAN OR EQUAL TO 0 DO',
+            '        RETURN 0',
+            '    BUT IF n EQUAL TO 1 DO',
+            '        RETURN 1',
+            '    OTHERWISE DO',
+            '        DEFINE VARIABLE a TO BE MUTABLE NUMBER',
+            '        DEFINE VARIABLE b TO BE MUTABLE NUMBER',
+            '        CALL FUNCTION fibonacci WITH ARG n minus 1',
+            '            THEN PUT RESULT INTO a',
+            '        CALL FUNCTION fibonacci WITH ARG n minus 2',
+            '            THEN PUT RESULT INTO b',
+            '        RETURN a PLUS b',
+            '    END OF IF',
+            'END OF FUNCTION',
             '',
-            'Define variable min to be equal to 1',
-            'Define variable max to be equal to 10',
+            'DEFINE FUNCTION listFibonacci WITH PARAM',
+            '    start AS NUMBER ,',
+            '    finish AS NUMBER',
+            'DO',
+            '    FOR i FROM start TO finish DO',
+            '        DEFINE VARIABLE fiboRes TO BE MUTABLE NUMBER',
+            '        CALL FUNCTION fibonacci WITH ARG i',
+            '            THEN PUT RESULT INTO fiboRes',
+            '        PRINT "Fibonacci of " PLUS i PLUS " is " PLUS fiboRes',
+            '    END OF FOR',
+            'END OF FUNCTION',
             '',
-            'For i from min to max do',
-            '    Increase sum by i plus 1',
-            '    Print i',
-            'End of for',
-            '',
-            'Print "Sum" Plus i',
-            ''
+            'CALL FUNCTION listFibonacci WITH ARG 1 , 20',
         ].join('\n'),
         cursorBlinking: 'phase',
         renderIndentGuides: true
@@ -66,6 +86,7 @@ require(['compiler', 'vs/editor/editor.main'], function (Compiler) {
                 alertContainer.innerText = ex;
                 alertContainer.style.display = 'block';
                 setAstContainerFade(true);
+                console.debug(ex);
             }
         }
 

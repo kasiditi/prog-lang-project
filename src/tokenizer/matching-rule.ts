@@ -43,6 +43,7 @@ export const MATCHING_RULES: MatchingRule[] = [
     { matcher: 'number', tokenType: TokenType.VariableTypeNumber },
     { matcher: 'or', tokenType: TokenType.Or },
     { matcher: 'otherwise', tokenType: TokenType.Otherwise },
+    { matcher: 'return', tokenType: TokenType.Return },
     { matcher: 'print', tokenType: TokenType.Print },
     { matcher: 'set', tokenType: TokenType.Set },
     { matcher: 'string', tokenType: TokenType.VariableTypeString },

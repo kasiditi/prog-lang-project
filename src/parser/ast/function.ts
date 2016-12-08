@@ -1,3 +1,4 @@
+import { ASTExpression } from './expression';
 import { ASTStatement } from './statement';
 import { VariableTypeInfo } from './variable-type-info';
 import { VariableType } from './variable-type';

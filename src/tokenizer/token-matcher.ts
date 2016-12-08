@@ -18,7 +18,7 @@ export interface TokenMatcher {
     extractTokenType(expectedTokens: TokenType[]): TokenType;
     peekNextTokenAsString(): string | false;
     extractNextTokenAsString(): string;
-    extractStringLiteral(): string | false;
+    extractStringLiteralIfAny(): string | false;
 }
 
 class ExpectedTokenSet {
@@ -158,8 +158,14 @@ export class TokenMatcherImpl implements TokenMatcher {
 
         const token = this.sourceCode.slice(startPos, endPos);
         for (let rule of this.matchingRules) {
-            if (rule.matcher === token.toLowerCase()) {
-                throw this.makeError(startPos, `Unexpected identifier "${token}".`);
+            const tokenLowercase = token.toLowerCase();
+            const matcher = rule.matcher;
+            if (matcher === tokenLowercase || (
+                matcher.substr(0, token.length) === tokenLowercase &&
+                matcher.length > token.length &&
+                matcher.charAt(token.length) === ' '
+            )) {
+                throw this.makeError(startPos, `Unexpected reserved word "${token}".`);
             }
         }
 
@@ -183,7 +189,7 @@ export class TokenMatcherImpl implements TokenMatcher {
         }
     }
 
-    public extractStringLiteral(): string | false {
+    public extractStringLiteralIfAny(): string | false {
         this.expectedErrorReportSet.clear();
 
         const startPos = this.getNextNonWhitespacePosition();

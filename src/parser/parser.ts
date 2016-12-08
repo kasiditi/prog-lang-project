@@ -20,6 +20,7 @@ import {
     ASTAssignmentSet,
     ASTForBlock,
     ASTFunctionCall,
+    ASTFunctionReturn,
     ASTIfBlock,
     ASTPrintStatement,
     ASTStatement,
@@ -38,7 +39,8 @@ const STATEMENT_FIRST_SET = [
     TokenType.If,
     TokenType.While,
     TokenType.For,
-    TokenType.FunctionCall
+    TokenType.FunctionCall,
+    TokenType.Return
 ];
 const PROGRAM_FIRST_SET = [...STATEMENT_FIRST_SET, TokenType.FunctionDeclaration, TokenType.EndOfFile];
 
@@ -58,10 +60,10 @@ const OPERATOR_WITH_TWO_OPERANDS_FIRST_SET = [
     TokenType.And,
     TokenType.Divide,
     TokenType.EqualTo,
-    TokenType.GreaterThan,
     TokenType.GreaterThanOrEqualTo,
-    TokenType.LessThan,
+    TokenType.GreaterThan,
     TokenType.LessThanOrEqualTo,
+    TokenType.LessThan,
     TokenType.Minus,
     TokenType.Modulo,
     TokenType.Multiply,
@@ -163,43 +165,39 @@ export class Parser {
             return atom;
         }
 
-        const token = this.tokenizer.peekNextTokenAsString();
-        if (token !== false) {
-            // Check for number
-            if (/^-?([0-9]*\.[0-9]+|[0-9]+)$/.test(token)) {
-                this.tokenizer.extractNextTokenAsString();
-                const atom: ASTExpressionAtomNumber = {
-                    type: 'ExpressionAtom',
-                    atomType: 'Number',
-                    value: token
-                };
-                return atom;
-            }
-            // Check for variable name
-            if (VARIABLE_NAME_REG_EXP.test(token)) {
-                this.tokenizer.extractNextTokenAsString();
-                const atom: ASTExpressionAtomVariable = {
-                    type: 'ExpressionAtom',
-                    atomType: 'Variable',
-                    variableName: token
-                };
-                return atom;
-            }
-        }
-
         // Check for string
-        const tokenStr = this.tokenizer.extractStringLiteral();
-
-        if (tokenStr === false) {
-            throw new Error('Invalid expression.');
+        const tokenStr = this.tokenizer.extractStringLiteralIfAny();
+        if (tokenStr !== false) {
+            const atom: ASTExpressionAtomString = {
+                type: 'ExpressionAtom',
+                atomType: 'String',
+                value: tokenStr
+            };
+            return atom;
         }
 
-        const atom: ASTExpressionAtomString = {
-            type: 'ExpressionAtom',
-            atomType: 'String',
-            value: tokenStr
-        };
-        return atom;
+        const token = this.tokenizer.extractNextTokenAsString();
+
+        // Check for number
+        if (/^-?([0-9]*\.[0-9]+|[0-9]+)$/.test(token)) {
+            const atom: ASTExpressionAtomNumber = {
+                type: 'ExpressionAtom',
+                atomType: 'Number',
+                value: token
+            };
+            return atom;
+        }
+        // Check for variable name
+        if (VARIABLE_NAME_REG_EXP.test(token)) {
+            const atom: ASTExpressionAtomVariable = {
+                type: 'ExpressionAtom',
+                atomType: 'Variable',
+                variableName: token
+            };
+            return atom;
+        }
+
+        throw new Error('Invalid expression.');
     }
 
     private createExpression(): ASTExpression {
@@ -467,6 +465,13 @@ export class Parser {
         };
     }
 
+    public createReturnStatement(): ASTFunctionReturn {
+        return {
+            type: 'FunctionReturn',
+            returnValue: this.createExpression()
+        };
+    }
+
     public createStatements(): ASTStatement[] {
         const statements: ASTStatement[] = [];
 
@@ -482,11 +487,7 @@ export class Parser {
         return statements;
     }
 
-    public createStatement(statementType?: TokenType): ASTStatement {
-        if (statementType === undefined) {
-            statementType = this.tokenizer.extractTokenType(STATEMENT_FIRST_SET);
-        }
-
+    public createStatement(statementType: TokenType): ASTStatement {
         switch (statementType) {
             case TokenType.VariableDeclaration:
                 return this.createVariableDeclaration();
@@ -504,8 +505,9 @@ export class Parser {
                 return this.createForLoop();
             case TokenType.FunctionCall:
                 return this.createFunctionCall();
+            case TokenType.Return:
+                return this.createReturnStatement();
         }
-
         throw this.createErrorInvalidToken(statementType);
     }
 }
