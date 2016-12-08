@@ -37,7 +37,7 @@ export interface BaseASTExpression {
 type OperatorWithOneOperand = ExpressionOperator.Not;
 
 export interface ASTExpressionWithOneOperand extends BaseASTExpression {
-    operand: OperatorWithOneOperand;
+    operator: OperatorWithOneOperand;
     rightValue: ASTExpressionAtom | ASTExpression;
 }
 
@@ -62,4 +62,5 @@ export interface ASTExpressionWithTwoOperand extends BaseASTExpression {
     rightValue: ASTExpressionAtom | ASTExpression;
 }
 
-export type ASTExpression = ASTExpressionAtom | ASTExpressionWithOneOperand | ASTExpressionWithTwoOperand;
+export type ASTExpressionWithOperator = ASTExpressionWithOneOperand | ASTExpressionWithTwoOperand;
+export type ASTExpression = ASTExpressionAtom | ASTExpressionWithOperator;

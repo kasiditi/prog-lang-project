@@ -13,15 +13,23 @@
     <style>
         .box {
             width: 100%;
-            height: 400px;
             box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.2);
+            height: 25rem;
         }
 
-        .ast-box {
+        .in-box-heading {
+            margin-top: 0.78rem;
+        }
+
+        .out-box {
             transition: opacity 0.2s linear;
         }
 
-        .ast-box.calculating {
+        .box-content {
+            height: 100%;
+        }
+
+        .out-box.calculating {
             opacity: 0.2;
         }
 
@@ -29,30 +37,61 @@
             position: absolute;
             bottom: 1rem;
             left: 1rem;
+            right: 1rem;
         }
     </style>
 </head>
 
 <body>
     <div class="container-fluid">
-        <h1 class="mt-2">Demo</h1>
+        <h3 class="mt-1 mb-1">Demo</h3>
         <div class="row">
-            <div class="col-xs-12 col-md-6">
-                <h5 class="mt-1">Source Code</h5>
-                <div id="editor_container" class="box"></div>
+            <div class="col-xs-12 col-sm-6">
+                <h5 class="in-box-heading">Your Code</h5>
+                <div id="editor_container" class="box in-box"></div>
+                <div class="alert alert-danger mt-1" role="alert" style="display:none;" id="alert_container"></div>
             </div>
-            <div class="col-xs-12 col-md-6">
-                <h5 class="mt-1">Parsed AST</h5>
-                <div class="box ast-box calculating" id="ast_container">
-                    <div id="ast_text_container" class="box"></div>
+            <div class="col-xs-12 col-sm-6">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#output" role="tab">Output</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#js" role="tab">JS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#ast" role="tab">AST</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="output" role="tabpanel">
+                        <div class="box out-box calculating" id="output_container">
+                            <div id="output_text_container" class="box-content"></div>
+                        </div>
+                        <button type="button" class="btn btn-success mt-1" id="execute_code_btn" disabled="disabled">Run Code</button>
+                    </div>
+                    <div class="tab-pane" id="js" role="tabpanel">
+                        <div class="box out-box calculating" id="js_container">
+                            <div id="js_text_container" class="box-content"></div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="ast" role="tabpanel">
+                        <div class="box out-box calculating" id="ast_container">
+                            <div id="ast_text_container" class="box-content"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="stick-bottom">
-        <div class="alert alert-warning" role="alert" style="display:none;" id="alert_container"></div>
-    </div>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js" integrity="sha384-3ceskX3iaEnIogmQchP8opvBy3Mi7Ce34nWjpBIwVTHfGYWQS9jwHDVRnpKKHJg7"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.3.7/js/tether.min.js" integrity="sha384-XTs3FgkjiBgo8qjEjBk0tGmf3wPrWtA6coPfQDfFEY8AnYJwjalXCiosYRBIBZX8"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK"
+        crossorigin="anonymous"></script>
     <script src="../node_modules/monaco-editor/min/vs/loader.js"></script>
     <script src="./index.js"></script>
 </body>

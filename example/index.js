@@ -4,7 +4,7 @@ require.config({
         'compiler': '../dist/compiler'
     }
 });
-require(['compiler', 'vs/editor/editor.main'], function (Compiler) {
+require(['compiler', 'vs/editor/editor.main'], function(Compiler) {
     var editor = monaco.editor.create(document.getElementById('editor_container'), {
         value: [
             'DEFINE FUNCTION fibonacci WITH PARAM',
@@ -52,57 +52,125 @@ require(['compiler', 'vs/editor/editor.main'], function (Compiler) {
         language: 'json'
     });
 
-    if (editor && astDisplay) {
+    var jsDisplay = monaco.editor.create(document.getElementById('js_text_container'), {
+        value: '',
+        cursorBlinking: 'phase',
+        readOnly: true,
+        renderIndentGuides: true,
+        language: 'javascript'
+    });
+
+    var outputDisplay = monaco.editor.create(document.getElementById('output_text_container'), {
+        value:  'Click "Run Code" to run.\nThe output will show here and also on the browser console.\n',
+        cursorBlinking: 'phase',
+        readOnly: true,
+        renderIndentGuides: true
+    });
+
+    if (editor && astDisplay && jsDisplay && outputDisplay) {
         var throttler = undefined;
 
         var alertContainer = document.getElementById('alert_container');
+
         var astContainer = document.getElementById('ast_container');
+        var jsContainer = document.getElementById('js_container');
+        var outputContainer = document.getElementById('output_container');
 
-        var isAstContainerFading = true;
+        var executeBtn = document.getElementById('execute_code_btn');
 
-        function setAstContainerFade(isFade) {
-            if (isAstContainerFading === true) {
+        var currentJsCode = '';
+
+        var isOutputContainerFading = true;
+
+        function setOutputContainerFade(isFade) {
+            if (isOutputContainerFading === true) {
                 if (isFade === false) {
-                    astContainer.className = 'box ast-box';
+                    astContainer.className = 'box out-box';
+                    jsContainer.className = 'box out-box';
+                    outputContainer.className = 'box out-box';
                 }
             } else {
                 if (isFade === true) {
-                    astContainer.className = 'box ast-box calculating';
+                    astContainer.className = 'box out-box calculating';
+                    jsContainer.className = 'box out-box calculating';
+                    outputContainer.className = 'box out-box calculating';
+                    executeBtn.disabled = true;
                 }
             }
-            isAstContainerFading = isFade;
+            isOutputContainerFading = isFade;
         }
 
         function compile() {
             throttler = undefined;
             var sourceCode = editor.getValue();
             try {
-                var astResult = Compiler.Parser.parseSourceCode(sourceCode);
-                var result = JSON.stringify(astResult.instructions, null, 2);
-                astDisplay.getModel().setValue(result);
+                var ast = Compiler.Parser.parseSourceCode(sourceCode);
+                var astString = JSON.stringify(ast.instructions, null, 2);
+
+                currentJsCode = (new Compiler.ECMAScriptCodeGenerator(ast)).generateCode();
+
+                astDisplay.getModel().setValue(astString);
+                jsDisplay.getModel().setValue(currentJsCode);
+
                 alertContainer.style.display = 'none';
-                setAstContainerFade(false);
+                executeBtn.disabled = false;
+                setOutputContainerFade(false);
             } catch (ex) {
                 alertContainer.innerText = ex;
                 alertContainer.style.display = 'block';
-                setAstContainerFade(true);
+                setOutputContainerFade(true);
                 console.debug(ex);
             }
         }
 
         compile();
 
-        editor.onDidChangeModelContent(function (e) {
-            setAstContainerFade(true);
+        executeBtn.onclick = function() {
+            executeBtn.disabled = false;
+
+            var output = [];
+            var VM = {
+                print: function(data) {
+                    output.push(data);
+                    console.log(data);
+                }
+            };
+
+            try {
+                eval(currentJsCode);
+                var outputString = '';
+                for (var i = 0; i < output.length; i++) {
+                    outputString += output[i] + '\n';
+                }
+                outputDisplay.getModel().setValue(outputString);
+            } catch (ex) {
+                console.error(ex);
+                outputDisplay.getModel().setValue('Error Running Code:\n' + (ex + ''));
+            }
+        };
+
+        editor.onDidChangeModelContent(function(e) {
+            setOutputContainerFade(true);
 
             if (throttler !== undefined) {
                 clearTimeout(throttler);
             }
             throttler = setTimeout(compile, 500);
         });
-        window.onresize = function () {
+
+        function invalidateEditorLayout() {
             editor.layout();
             astDisplay.layout();
+            jsDisplay.layout();
+            outputDisplay.layout();
+        }
+
+        window.onresize = function() {
+            invalidateEditorLayout();
         };
+
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+            invalidateEditorLayout();
+        });
     }
 });

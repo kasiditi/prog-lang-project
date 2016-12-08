@@ -207,7 +207,7 @@ export class Parser {
             this.tokenizer.extractTokenType([TokenType.Not]);
             const notExpression: ASTExpressionWithOneOperand = {
                 type: 'Expression',
-                operand: ExpressionOperator.Not,
+                operator: ExpressionOperator.Not,
                 rightValue: this.createExpression()
             };
             return notExpression;

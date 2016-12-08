@@ -4,6 +4,205 @@
     (factory((global.ProgLangCompiler = global.ProgLangCompiler || {})));
 }(this, (function (exports) { 'use strict';
 
+var ExpressionOperator;
+(function (ExpressionOperator) {
+    ExpressionOperator[ExpressionOperator["Plus"] = 0] = "Plus";
+    ExpressionOperator[ExpressionOperator["And"] = 1] = "And";
+    ExpressionOperator[ExpressionOperator["Divide"] = 2] = "Divide";
+    ExpressionOperator[ExpressionOperator["EqualTo"] = 3] = "EqualTo";
+    ExpressionOperator[ExpressionOperator["GreaterThan"] = 4] = "GreaterThan";
+    ExpressionOperator[ExpressionOperator["GreaterThanOrEqualTo"] = 5] = "GreaterThanOrEqualTo";
+    ExpressionOperator[ExpressionOperator["LessThan"] = 6] = "LessThan";
+    ExpressionOperator[ExpressionOperator["LessThanOrEqualTo"] = 7] = "LessThanOrEqualTo";
+    ExpressionOperator[ExpressionOperator["Minus"] = 8] = "Minus";
+    ExpressionOperator[ExpressionOperator["Modulo"] = 9] = "Modulo";
+    ExpressionOperator[ExpressionOperator["Multiply"] = 10] = "Multiply";
+    ExpressionOperator[ExpressionOperator["Not"] = 11] = "Not";
+    ExpressionOperator[ExpressionOperator["NotEqualTo"] = 12] = "NotEqualTo";
+    ExpressionOperator[ExpressionOperator["Or"] = 13] = "Or";
+})(ExpressionOperator || (ExpressionOperator = {}));
+
+var BaseCodeGenerator = (function () {
+    function BaseCodeGenerator(program) {
+        this.program = program;
+    }
+    return BaseCodeGenerator;
+}());
+
+var __extends = (undefined && undefined.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INDENT_STR = '\t';
+var NEWLINE_STR = '\n';
+var ECMAScriptCodeGenerator = (function (_super) {
+    __extends(ECMAScriptCodeGenerator, _super);
+    function ECMAScriptCodeGenerator() {
+        _super.apply(this, arguments);
+        this.currentIndentLevel = 0;
+    }
+    ECMAScriptCodeGenerator.prototype.getIndenter = function () {
+        var indenter = '';
+        for (var i = 0; i < this.currentIndentLevel; i++) {
+            indenter += INDENT_STR;
+        }
+        return indenter;
+    };
+    ECMAScriptCodeGenerator.prototype.indent = function () {
+        this.currentIndentLevel++;
+    };
+    ECMAScriptCodeGenerator.prototype.unindent = function () {
+        this.currentIndentLevel--;
+    };
+    ECMAScriptCodeGenerator.prototype.wrapLineOfCode = function (codeLine) {
+        return this.getIndenter() + codeLine + NEWLINE_STR;
+    };
+    ECMAScriptCodeGenerator.prototype.generateCode = function () {
+        var output = '';
+        for (var _i = 0, _a = this.program.instructions; _i < _a.length; _i++) {
+            var instruction = _a[_i];
+            if (instruction.type === 'Function') {
+                output += this.generateFunction(instruction);
+            }
+            else {
+                output += this.generateStatement(instruction);
+            }
+        }
+        return output;
+    };
+    ECMAScriptCodeGenerator.prototype.generateFunction = function (fn) {
+        var output = '';
+        var params = fn.parameters.map(function (param) { return param.name; }).join(', ');
+        output += this.wrapLineOfCode("function " + fn.functionName + " (" + params + ") {");
+        this.indent();
+        output += this.generateStatements(fn.statements);
+        this.unindent();
+        output += this.wrapLineOfCode("}");
+        return output;
+    };
+    ECMAScriptCodeGenerator.prototype.generateStatements = function (statements) {
+        var content = '';
+        for (var i = 0; i < statements.length; i++) {
+            content += this.generateStatement(statements[i]);
+        }
+        return content;
+    };
+    ECMAScriptCodeGenerator.prototype.generateStatement = function (statement) {
+        var _this = this;
+        switch (statement.type) {
+            case 'VariableDeclaration':
+                var declaration = "var " + statement.variableName;
+                if (statement.initialValue !== undefined) {
+                    declaration += " = " + this.generateExpression(statement.initialValue);
+                }
+                return this.wrapLineOfCode(declaration + ";");
+            case 'AssignmentSet': {
+                return this.wrapLineOfCode(statement.variableName + " = " + this.generateExpression(statement.value) + ";");
+            }
+            case 'AssignmentIncrease': {
+                return this.wrapLineOfCode(statement.variableName + " += " + this.generateExpression(statement.value) + ";");
+            }
+            case 'AssignmentDecrease': {
+                return this.wrapLineOfCode(statement.variableName + " -= " + this.generateExpression(statement.value) + ";");
+            }
+            case 'PrintStatement': {
+                return this.wrapLineOfCode("VM.print(" + this.generateExpression(statement.value) + ");");
+            }
+            case 'IfBlock': {
+                var content = this.wrapLineOfCode("if (" + this.generateExpression(statement.ifBlocks[0].condition) + ") {");
+                this.indent();
+                content += this.generateStatements(statement.ifBlocks[0].statements);
+                this.unindent();
+                for (var i = 1; i < statement.ifBlocks.length; i++) {
+                    content += this.wrapLineOfCode("} else if (" + this.generateExpression(statement.ifBlocks[i].condition) + ") {");
+                    this.indent();
+                    content += this.generateStatements(statement.ifBlocks[i].statements);
+                    this.unindent();
+                }
+                if (statement.elseBlockStatements !== undefined) {
+                    content += this.wrapLineOfCode("} else {");
+                    this.indent();
+                    content += this.generateStatements(statement.elseBlockStatements);
+                    this.unindent();
+                }
+                content += this.wrapLineOfCode('}');
+                return content;
+            }
+            case 'WhileBlock': {
+                var block = this.wrapLineOfCode("while (" + this.generateExpression(statement.condition) + ") {");
+                this.indent();
+                block += this.generateStatements(statement.statements);
+                this.unindent();
+                block += this.wrapLineOfCode("}");
+                return block;
+            }
+            case 'ForBlock': {
+                var i = statement.iteratorName;
+                var from = this.generateExpression(statement.iteratorFrom);
+                var to = this.generateExpression(statement.iteratorTo);
+                var block = this.wrapLineOfCode("for (var " + i + " = " + from + "; " + i + " <= " + to + "; " + i + "++) {");
+                this.indent();
+                block += this.generateStatements(statement.statements);
+                this.unindent();
+                block += this.wrapLineOfCode("}");
+                return block;
+            }
+            case 'FunctionCall': {
+                var args = statement.callArguments.map(function (arg) { return _this.generateExpression(arg); }).join(', ');
+                var content = statement.functionName + "(" + args + ");";
+                if (statement.resultTarget !== undefined) {
+                    content = statement.resultTarget + " = " + content;
+                }
+                return this.wrapLineOfCode(content);
+            }
+            case 'FunctionReturn': {
+                return this.wrapLineOfCode("return " + this.generateExpression(statement.returnValue) + ";");
+            }
+        }
+    };
+    ECMAScriptCodeGenerator.prototype.generateExpression = function (exp) {
+        if (exp.type === 'ExpressionAtom') {
+            var atom = exp;
+            switch (atom.atomType) {
+                case 'Number': return atom.value;
+                case 'String': return JSON.stringify(atom.value);
+                case 'Boolean': return atom.value ? 'true' : 'false';
+                case 'Variable': return atom.variableName;
+            }
+            throw new Error('Invalid expression.');
+        }
+        else if (exp.type === 'Expression') {
+            var e = exp;
+            var r = this.generateExpression(e.rightValue);
+            if (e.operator === ExpressionOperator.Not) {
+                return "!" + r;
+            }
+            var l = this.generateExpression(e.leftValue);
+            switch (e.operator) {
+                case ExpressionOperator.And: return l + " && " + r;
+                case ExpressionOperator.Or: return l + " || " + r;
+                case ExpressionOperator.Plus: return l + " + " + r;
+                case ExpressionOperator.Minus: return l + " - " + r;
+                case ExpressionOperator.Multiply: return l + " * " + r;
+                case ExpressionOperator.Divide: return l + " / " + r;
+                case ExpressionOperator.Modulo: return l + " % " + r;
+                case ExpressionOperator.EqualTo: return l + " === " + r;
+                case ExpressionOperator.NotEqualTo: return l + " !== " + r;
+                case ExpressionOperator.GreaterThan: return l + " > " + r;
+                case ExpressionOperator.GreaterThanOrEqualTo: return l + " >= " + r;
+                case ExpressionOperator.LessThan: return l + " < " + r;
+                case ExpressionOperator.LessThanOrEqualTo: return l + " <= " + r;
+            }
+            throw new Error('Invalid expression.');
+        }
+        else {
+            throw new Error('Invalid expression.');
+        }
+    };
+    return ECMAScriptCodeGenerator;
+}(BaseCodeGenerator));
+
 var LineMapper = (function () {
     function LineMapper(sourceCode) {
         this.sourceCode = sourceCode;
@@ -343,24 +542,6 @@ var TokenMatcherImpl = (function () {
     return TokenMatcherImpl;
 }());
 
-var ExpressionOperator;
-(function (ExpressionOperator) {
-    ExpressionOperator[ExpressionOperator["Plus"] = 0] = "Plus";
-    ExpressionOperator[ExpressionOperator["And"] = 1] = "And";
-    ExpressionOperator[ExpressionOperator["Divide"] = 2] = "Divide";
-    ExpressionOperator[ExpressionOperator["EqualTo"] = 3] = "EqualTo";
-    ExpressionOperator[ExpressionOperator["GreaterThan"] = 4] = "GreaterThan";
-    ExpressionOperator[ExpressionOperator["GreaterThanOrEqualTo"] = 5] = "GreaterThanOrEqualTo";
-    ExpressionOperator[ExpressionOperator["LessThan"] = 6] = "LessThan";
-    ExpressionOperator[ExpressionOperator["LessThanOrEqualTo"] = 7] = "LessThanOrEqualTo";
-    ExpressionOperator[ExpressionOperator["Minus"] = 8] = "Minus";
-    ExpressionOperator[ExpressionOperator["Modulo"] = 9] = "Modulo";
-    ExpressionOperator[ExpressionOperator["Multiply"] = 10] = "Multiply";
-    ExpressionOperator[ExpressionOperator["Not"] = 11] = "Not";
-    ExpressionOperator[ExpressionOperator["NotEqualTo"] = 12] = "NotEqualTo";
-    ExpressionOperator[ExpressionOperator["Or"] = 13] = "Or";
-})(ExpressionOperator || (ExpressionOperator = {}));
-
 var VariableType;
 (function (VariableType) {
     VariableType[VariableType["Number"] = 0] = "Number";
@@ -522,7 +703,7 @@ var Parser = (function () {
             this.tokenizer.extractTokenType([TokenType.Not]);
             var notExpression = {
                 type: 'Expression',
-                operand: ExpressionOperator.Not,
+                operator: ExpressionOperator.Not,
                 rightValue: this.createExpression()
             };
             return notExpression;
@@ -824,7 +1005,22 @@ var Parser = (function () {
     return Parser;
 }());
 
+function compile(sourceCode, language) {
+    var ast = Parser.parseSourceCode(sourceCode);
+    var codeGenerator;
+    switch (language) {
+        case 'js':
+            codeGenerator = new ECMAScriptCodeGenerator(ast);
+            break;
+        default:
+            throw new Error("Language \"" + language + "\" is not supported.");
+    }
+    return codeGenerator.generateCode();
+}
+
+exports.compile = compile;
 exports.Parser = Parser;
+exports.ECMAScriptCodeGenerator = ECMAScriptCodeGenerator;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
