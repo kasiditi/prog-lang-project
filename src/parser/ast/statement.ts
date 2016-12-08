@@ -1,12 +1,12 @@
-import { ASTExpression } from './ast-expression';
+import { VariableTypeInfo } from './variable-type-info';
+import { ASTExpression } from './expression';
 import { VariableType } from './variable-type';
 
 export interface ASTVariableDeclaration {
     type: 'VariableDeclaration';
     variableName: string;
-    variableType: VariableType | undefined;
-    value: ASTExpression | undefined;
-    isMutable: boolean;
+    variableTypeInfo: VariableTypeInfo | undefined;
+    initialValue: ASTExpression | undefined;
 }
 
 interface BaseASTAssignment {
@@ -59,6 +59,18 @@ export interface ASTForBlock {
     statements: ASTStatement[];
 }
 
+export interface ASTFunctionCall {
+    type: 'FunctionCall';
+    functionName: string;
+    callArguments: ASTExpression[];
+    resultTarget: string | undefined;
+}
+
+export interface ASTFunctionReturn {
+    type: 'FunctionReturn';
+    returnValue: ASTExpression;
+}
+
 export type ASTStatement =
     ASTVariableDeclaration |
     ASTAssignmentSet |
@@ -67,4 +79,6 @@ export type ASTStatement =
     ASTPrintStatement |
     ASTIfBlock |
     ASTWhileBlock |
-    ASTForBlock;
+    ASTForBlock |
+    ASTFunctionCall |
+    ASTFunctionReturn;

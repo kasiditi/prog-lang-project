@@ -1,5 +1,6 @@
-import { TokenType } from './token-type';
+import { LineMapper } from './line-mapper';
 import { MATCHING_RULES } from './matching-rule';
+import { TokenType } from './token-type';
 
 interface PositiveMatchCheckingResult {
     isMatch: true;
@@ -17,21 +18,44 @@ export interface TokenMatcher {
     extractTokenType(expectedTokens: TokenType[]): TokenType;
     peekNextTokenAsString(): string | false;
     extractNextTokenAsString(): string;
-    extractStringLiteral(): string | false;
+    extractStringLiteralIfAny(): string | false;
+}
+
+class ExpectedTokenSet {
+    private tokenStringSet = new Set<string>();
+
+    public addExpectedToken(tokenString: string) {
+        this.tokenStringSet.add(tokenString);
+    }
+
+    public clear() {
+        this.tokenStringSet.clear();
+    }
+
+    public getExpectedTokenStringList(): string[] {
+        const l: string[] = [];
+        this.tokenStringSet.forEach(token => l.push(token));
+        l.sort();
+        return l;
+    }
 }
 
 export class TokenMatcherImpl implements TokenMatcher {
     private rulesMap = new Map<TokenType, string>();
     private position = 0;
+    private expectedErrorReportSet = new ExpectedTokenSet();
+    private lineMapper: LineMapper;
 
-    public constructor(private sourceCode: string, matchingRules = MATCHING_RULES) {
+    public constructor(private sourceCode: string, private matchingRules = MATCHING_RULES) {
         for (let rule of matchingRules) {
             this.rulesMap.set(rule.tokenType, rule.matcher);
         }
+        this.lineMapper = new LineMapper(sourceCode);
     }
 
     private makeError(position: number, message: string): Error {
-        return new Error(`Position: ${position}.\n${message}`);
+        const lineCol = this.lineMapper.getLineAndCol(position);
+        return new Error(`L${lineCol.line}:C${lineCol.col}\n${message}`);
     }
 
     private isEndOfFile(curPos = this.position) {
@@ -57,7 +81,7 @@ export class TokenMatcherImpl implements TokenMatcher {
 
         for (let i = 0; i < expectedMatcher.length; i++) {
             if (expectedMatcher.charAt(i) === ' ') {
-                curPos = this.getNextNonWhitespacePosition(curPos);
+                curPos = this.getNextNonWhitespacePosition(curPos + 1);
             } else {
                 if (this.isEndOfFile(curPos) ||
                     this.sourceCode.charAt(curPos).toLowerCase() !== expectedMatcher.charAt(i)) {
@@ -81,31 +105,31 @@ export class TokenMatcherImpl implements TokenMatcher {
             if (token === TokenType.EndOfFile) {
                 const nextPos = this.getNextNonWhitespacePosition();
                 if (this.isEndOfFile(nextPos)) {
+                    this.expectedErrorReportSet.clear();
                     return {
                         token: token,
                         nextPosition: nextPos
                     };
+                } else {
+                    this.expectedErrorReportSet.addExpectedToken('(EOF)');
                 }
             } else {
                 const matcher = this.rulesMap.get(token);
                 const matchResult = this.checkForMatch(matcher);
 
                 if (matchResult.isMatch === true) {
+                    this.expectedErrorReportSet.clear();
                     return {
                         token: token,
                         nextPosition: matchResult.newPosition
                     };
+                } else {
+                    this.expectedErrorReportSet.addExpectedToken(matcher);
                 }
             }
         }
 
-        const expectStr = expectedTokens.map(token => {
-            if (token === TokenType.EndOfFile) {
-                return 'EOF';
-            } else {
-                return this.rulesMap.get(token);
-            }
-        }).join(' | ');
+        const expectStr = this.expectedErrorReportSet.getExpectedTokenStringList().join(' | ');
         throw this.makeError(this.position, `Expected: ${expectStr}.`);
     }
 
@@ -124,14 +148,29 @@ export class TokenMatcherImpl implements TokenMatcher {
     }
 
     private getNextTokenAsString(): { token: string; nextPosition: number; } {
+        this.expectedErrorReportSet.clear();
+
         const startPos = this.getNextNonWhitespacePosition();
         if (this.isEndOfFile(startPos)) {
-            throw this.makeError(startPos, `Expected a token.`);
+            throw this.makeError(startPos, `Unexpected EOF.`);
         }
         const endPos = this.getNextWhitespacePosition(startPos);
 
+        const token = this.sourceCode.slice(startPos, endPos);
+        for (let rule of this.matchingRules) {
+            const tokenLowercase = token.toLowerCase();
+            const matcher = rule.matcher;
+            if (matcher === tokenLowercase || (
+                matcher.substr(0, token.length) === tokenLowercase &&
+                matcher.length > token.length &&
+                matcher.charAt(token.length) === ' '
+            )) {
+                throw this.makeError(startPos, `Unexpected reserved word "${token}".`);
+            }
+        }
+
         return {
-            token: this.sourceCode.slice(startPos, endPos),
+            token,
             nextPosition: endPos
         };
     }
@@ -150,7 +189,9 @@ export class TokenMatcherImpl implements TokenMatcher {
         }
     }
 
-    public extractStringLiteral(): string | false {
+    public extractStringLiteralIfAny(): string | false {
+        this.expectedErrorReportSet.clear();
+
         const startPos = this.getNextNonWhitespacePosition();
         if (this.isEndOfFile(startPos)) {
             return false;

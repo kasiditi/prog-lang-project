@@ -9,7 +9,7 @@
     "build:dist": "tsc -p tsconfig-dist.json && rollup --config rollup.config.js && uglifyjs --compress --output ./dist/compiler.min.js --mangle -- ./dist/compiler.js",
     "test": "concurrently \"npm run tsc:w\" \"nodemon --delay 1000ms build/test/main.js\"",
     "test:o": "npm run tsc && node build/test/main",
-    "coverage": "istanbul cover build/test/main.js"
+    "coverage": "npm run tsc && istanbul cover build/test/main.js"
   },
   "author": "Kasidit Iamthong",
   "license": "MIT",

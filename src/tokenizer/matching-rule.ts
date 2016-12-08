@@ -6,13 +6,14 @@ export interface MatchingRule {
 }
 
 export const MATCHING_RULES: MatchingRule[] = [
+    { matcher: ',', tokenType: TokenType.Comma },
     { matcher: 'plus', tokenType: TokenType.Plus },
     { matcher: 'and', tokenType: TokenType.And },
     { matcher: 'as', tokenType: TokenType.As },
     { matcher: 'boolean', tokenType: TokenType.VariableTypeBoolean },
     { matcher: 'but if', tokenType: TokenType.ButIf },
     { matcher: 'by', tokenType: TokenType.By },
-    { matcher: 'comma', tokenType: TokenType.Comma },
+    { matcher: 'call function', tokenType: TokenType.FunctionCall },
     { matcher: 'decrease', tokenType: TokenType.Decrease },
     { matcher: 'define function', tokenType: TokenType.FunctionDeclaration },
     { matcher: 'define variable', tokenType: TokenType.VariableDeclaration },
@@ -42,12 +43,16 @@ export const MATCHING_RULES: MatchingRule[] = [
     { matcher: 'number', tokenType: TokenType.VariableTypeNumber },
     { matcher: 'or', tokenType: TokenType.Or },
     { matcher: 'otherwise', tokenType: TokenType.Otherwise },
+    { matcher: 'return', tokenType: TokenType.Return },
     { matcher: 'print', tokenType: TokenType.Print },
     { matcher: 'set', tokenType: TokenType.Set },
     { matcher: 'string', tokenType: TokenType.VariableTypeString },
+    { matcher: 'that return', tokenType: TokenType.ThatReturn },
+    { matcher: 'then put result into', tokenType: TokenType.ThenPutResultInto },
     { matcher: 'to', tokenType: TokenType.To },
     { matcher: 'to be', tokenType: TokenType.ToBe },
     { matcher: 'true', tokenType: TokenType.BooleanValueTrue },
     { matcher: 'while', tokenType: TokenType.While },
     { matcher: 'with param', tokenType: TokenType.WithParam },
+    { matcher: 'with arg', tokenType: TokenType.WithArg }
 ];

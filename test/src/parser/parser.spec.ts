@@ -1,3 +1,5 @@
+import { VariableTypeInfo } from '../../../src/parser/ast/variable-type-info';
+import { ASTFunction } from '../../../src/parser/ast/function';
 import {
     ASTExpression,
     ASTExpressionAtom,
@@ -6,19 +8,21 @@ import {
     ASTExpressionAtomString,
     ASTExpressionAtomVariable,
     ASTExpressionWithTwoOperand
-} from '../../../src/parser/ast-expression';
+} from '../../../src/parser/ast/expression';
 import {
     ASTAssignmentDecrease,
     ASTAssignmentIncrease,
     ASTAssignmentSet,
     ASTForBlock,
+    ASTFunctionCall,
     ASTIfBlock,
     ASTPrintStatement,
     ASTStatement,
     ASTWhileBlock
-} from '../../../src/parser/ast-statement';
+} from '../../../src/parser/ast/statement';
 import { Parser } from '../../../src/parser/parser';
-import { VariableType } from '../../../src/parser/variable-type';
+import { VariableType } from '../../../src/parser/ast/variable-type';
+import { ExpressionOperator } from '../../../src/parser/ast/expression-operator';
 
 describe('Parser', () => {
     let uut: Parser;
@@ -34,9 +38,9 @@ describe('Parser', () => {
             expect(result.type).toBe('VariableDeclaration');
             if (result.type === 'VariableDeclaration') {
                 expect(result.variableName).toBe('abc');
-                expect(result.variableType).toBe(VariableType.Number);
-                expect(result.value).toBe(undefined);
-                expect(result.isMutable).toBe(false);
+                expect(result.variableTypeInfo!.variableType).toBe(VariableType.Number);
+                expect(result.variableTypeInfo!.isMutable).toBe(false);
+                expect(result.initialValue).toBe(undefined);
             }
         });
 
@@ -50,9 +54,9 @@ describe('Parser', () => {
             expect(result.type).toBe('VariableDeclaration');
             if (result.type === 'VariableDeclaration') {
                 expect(result.variableName).toBe('hello');
-                expect(result.variableType).toBe(VariableType.Boolean);
-                expect(result.value).toBe(undefined);
-                expect(result.isMutable).toBe(true);
+                expect(result.variableTypeInfo!.variableType).toBe(VariableType.Boolean);
+                expect(result.variableTypeInfo!.isMutable).toBe(true);
+                expect(result.initialValue).toBe(undefined);
             }
         });
 
@@ -70,44 +74,42 @@ describe('Parser', () => {
             expect(inst1.type).toBe('VariableDeclaration');
             if (inst1.type === 'VariableDeclaration') {
                 expect(inst1.variableName).toBe('hello');
-                expect(inst1.variableType).toBe(VariableType.String);
-                expect(inst1.value!.type).toBe('ExpressionAtom');
-                expect((inst1.value as ASTExpressionAtom).atomType).toBe('String');
-                expect((inst1.value as ASTExpressionAtomString).value).toBe('abcde');
-                expect(inst1.isMutable).toBe(true);
+                expect(inst1.variableTypeInfo!.variableType).toBe(VariableType.String);
+                expect(inst1.variableTypeInfo!.isMutable).toBe(true);
+                expect(inst1.initialValue!.type).toBe('ExpressionAtom');
+                expect((inst1.initialValue as ASTExpressionAtom).atomType).toBe('String');
+                expect((inst1.initialValue as ASTExpressionAtomString).value).toBe('abcde');
             }
 
             const inst2 = instructions[1];
             expect(inst2.type).toBe('VariableDeclaration');
             if (inst2.type === 'VariableDeclaration') {
                 expect(inst2.variableName).toBe('world');
-                expect(inst2.variableType).toBe(VariableType.Boolean);
-                expect(inst2.value!.type).toBe('ExpressionAtom');
-                expect((inst2.value as ASTExpressionAtom).atomType).toBe('Boolean');
-                expect((inst2.value as ASTExpressionAtomBoolean).value).toBe(false);
-                expect(inst2.isMutable).toBe(false);
+                expect(inst2.variableTypeInfo!.variableType).toBe(VariableType.Boolean);
+                expect(inst2.variableTypeInfo!.isMutable).toBe(false);
+                expect(inst2.initialValue!.type).toBe('ExpressionAtom');
+                expect((inst2.initialValue as ASTExpressionAtom).atomType).toBe('Boolean');
+                expect((inst2.initialValue as ASTExpressionAtomBoolean).value).toBe(false);
             }
 
             const inst3 = instructions[2];
             expect(inst3.type).toBe('VariableDeclaration');
             if (inst3.type === 'VariableDeclaration') {
                 expect(inst3.variableName).toBe('every');
-                expect(inst3.variableType).toBe(undefined);
-                expect(inst3.value!.type).toBe('ExpressionAtom');
-                expect((inst3.value as ASTExpressionAtom).atomType).toBe('Number');
-                expect((inst3.value as ASTExpressionAtomNumber).value).toBe('123');
-                expect(inst3.isMutable).toBe(false);
+                expect(inst3.variableTypeInfo).toBe(undefined);
+                expect(inst3.initialValue!.type).toBe('ExpressionAtom');
+                expect((inst3.initialValue as ASTExpressionAtom).atomType).toBe('Number');
+                expect((inst3.initialValue as ASTExpressionAtomNumber).value).toBe('123');
             }
 
             const inst4 = instructions[3];
             expect(inst4.type).toBe('VariableDeclaration');
             if (inst4.type === 'VariableDeclaration') {
                 expect(inst4.variableName).toBe('name');
-                expect(inst4.variableType).toBe(undefined);
-                expect(inst4.value!.type).toBe('ExpressionAtom');
-                expect((inst4.value as ASTExpressionAtom).atomType).toBe('Variable');
-                expect((inst4.value as ASTExpressionAtomVariable).variableName).toBe('hello');
-                expect(inst4.isMutable).toBe(false);
+                expect(inst4.variableTypeInfo).toBe(undefined);
+                expect(inst4.initialValue!.type).toBe('ExpressionAtom');
+                expect((inst4.initialValue as ASTExpressionAtom).atomType).toBe('Variable');
+                expect((inst4.initialValue as ASTExpressionAtomVariable).variableName).toBe('hello');
             }
         });
     });
@@ -329,6 +331,130 @@ describe('Parser', () => {
             expectSingleNumberPrint(inst.ifBlocks[3].statements, '4');
 
             expectSingleNumberPrint(inst.elseBlockStatements!, '5');
+        });
+    });
+
+    describe('function', () => {
+        const expectSingleNumberPrint = (statements: ASTStatement[], expectedNumber: string) => {
+            expect(statements.length).toBe(1);
+            const statement = statements[0];
+            expect(statement.type).toBe('PrintStatement');
+            if (statement.type === 'PrintStatement') {
+                expect(statement.value.type).toBe('ExpressionAtom');
+                expect((statement.value as ASTExpressionAtom).atomType).toBe('Number');
+                expect((statement.value as ASTExpressionAtomNumber).value).toBe(expectedNumber);
+            }
+        };
+
+        it('should parse basic function declaration correctly', () => {
+            const instructions = Parser.parseSourceCode(`
+                define function printNumber do
+                    print 5
+                end of function
+            `).instructions;
+            expect(instructions.length).toBe(1);
+            const inst = instructions[0] as ASTFunction;
+            expect(inst.type).toBe('Function');
+
+            expect(inst.functionName).toBe('printNumber');
+
+            expect(inst.parameters.length).toBe(0);
+            expect(inst.returnType).toBe(undefined);
+
+            expectSingleNumberPrint(inst.statements, '5');
+        });
+
+        it('should not allow nested function declaration', () => {
+            expect(() => Parser.parseSourceCode(`
+                define function printNumber do
+                    define function helperFunction do
+                        print 5
+                    end of function
+                end of function
+            `)).toThrow();
+        });
+
+        it('should parse function declaration with parameters correctly', () => {
+            const instructions = Parser.parseSourceCode(`
+                define function printSeven with param a as mutable number , b as string do
+                    print 7
+                end of function
+            `).instructions;
+            expect(instructions.length).toBe(1);
+            const inst = instructions[0] as ASTFunction;
+            expect(inst.type).toBe('Function');
+
+            expect(inst.functionName).toBe('printSeven');
+
+            expect(inst.parameters.length).toBe(2);
+            expect(inst.parameters[0].name).toBe('a');
+            expect(inst.parameters[0].typeInfo.variableType).toBe(VariableType.Number);
+            expect(inst.parameters[0].typeInfo.isMutable).toBe(true);
+            expect(inst.parameters[1].name).toBe('b');
+            expect(inst.parameters[1].typeInfo.variableType).toBe(VariableType.String);
+            expect(inst.parameters[1].typeInfo.isMutable).toBe(false);
+
+            expect(inst.returnType).toBe(undefined);
+
+            expectSingleNumberPrint(inst.statements, '7');
+        });
+
+        it('should parse basic function call correctly', () => {
+            const instructions = Parser.parseSourceCode(`
+                call function abc
+            `).instructions;
+            expect(instructions.length).toBe(1);
+            const inst = instructions[0] as ASTFunctionCall;
+            expect(inst.type).toBe('FunctionCall');
+
+            expect(inst.functionName).toBe('abc');
+            expect(inst.callArguments.length).toBe(0);
+            expect(inst.resultTarget).toBe(undefined);
+        });
+
+        it('should parse function call with arguments correctly', () => {
+            const instructions = Parser.parseSourceCode(`
+                call function abc with arg 1 plus 2 , a
+            `).instructions;
+            expect(instructions.length).toBe(1);
+            const inst = instructions[0] as ASTFunctionCall;
+            expect(inst.type).toBe('FunctionCall');
+
+            expect(inst.functionName).toBe('abc');
+            expect(inst.resultTarget).toBe(undefined);
+
+            expect(inst.callArguments.length).toBe(2);
+            expect(inst.callArguments[0].type).toBe('Expression');
+            expect((inst.callArguments[0] as ASTExpressionWithTwoOperand).operator).toBe(ExpressionOperator.Plus);
+            expect(inst.callArguments[1].type).toBe('ExpressionAtom');
+            expect((inst.callArguments[1] as ASTExpressionAtom).atomType).toBe('Variable');
+            expect((inst.callArguments[1] as ASTExpressionAtomVariable).variableName).toBe('a');
+        });
+
+        it('should parse function call with result target correctly', () => {
+            const instructions = Parser.parseSourceCode(`
+                call function abc then put result into a
+                call function def with arg a , b then put result into hello
+            `).instructions;
+            expect(instructions.length).toBe(2);
+
+            const inst1 = instructions[0] as ASTFunctionCall;
+            expect(inst1.type).toBe('FunctionCall');
+            expect(inst1.functionName).toBe('abc');
+            expect(inst1.callArguments.length).toBe(0);
+            expect(inst1.resultTarget).toBe('a');
+
+            const inst2 = instructions[1] as ASTFunctionCall;
+            expect(inst2.type).toBe('FunctionCall');
+            expect(inst2.functionName).toBe('def');
+            expect(inst2.resultTarget).toBe('hello');
+            expect(inst2.callArguments.length).toBe(2);
+            expect(inst2.callArguments[0].type).toBe('ExpressionAtom');
+            expect((inst2.callArguments[0] as ASTExpressionAtom).atomType).toBe('Variable');
+            expect((inst2.callArguments[0] as ASTExpressionAtomVariable).variableName).toBe('a');
+            expect(inst2.callArguments[1].type).toBe('ExpressionAtom');
+            expect((inst2.callArguments[1] as ASTExpressionAtom).atomType).toBe('Variable');
+            expect((inst2.callArguments[1] as ASTExpressionAtomVariable).variableName).toBe('b');
         });
     });
 });

@@ -6,6 +6,7 @@ export enum TokenType {
     BooleanValueTrue,
     ButIf,
     By,
+    FunctionCall,
     Comma,
     Decrease,
     Divide,
@@ -34,7 +35,10 @@ export enum TokenType {
     Or,
     Otherwise,
     Print,
+    Return,
     Set,
+    ThatReturn,
+    ThenPutResultInto,
     To,
     ToBe,
     VariableDeclaration,
@@ -43,5 +47,6 @@ export enum TokenType {
     VariableTypeNumber,
     VariableTypeString,
     While,
-    WithParam
+    WithParam,
+    WithArg
 }
