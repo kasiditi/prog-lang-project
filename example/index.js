@@ -1,7 +1,7 @@
 require.config({
     paths: {
-        'vs': './node_modules/monaco-editor/min/vs',
-        'compiler': './dist/compiler.min'
+        'vs': '../node_modules/monaco-editor/min/vs',
+        'compiler': '../dist/compiler.min'
     }
 });
 require(['compiler', 'vs/editor/editor.main'], function (Compiler) {
