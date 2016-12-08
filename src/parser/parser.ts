@@ -19,6 +19,7 @@ import {
     ASTAssignmentIncrease,
     ASTAssignmentSet,
     ASTForBlock,
+    ASTFunctionCall,
     ASTIfBlock,
     ASTPrintStatement,
     ASTStatement,
@@ -38,7 +39,8 @@ const STATEMENT_FIRST_SET = [
     TokenType.Print,
     TokenType.If,
     TokenType.While,
-    TokenType.For
+    TokenType.For,
+    TokenType.FunctionCall
 ];
 const PROGRAM_FIRST_SET = [...STATEMENT_FIRST_SET, TokenType.FunctionDeclaration, TokenType.EndOfFile];
 
@@ -434,6 +436,39 @@ export class Parser {
         };
     }
 
+    public createFunctionCall(): ASTFunctionCall {
+        const functionName = this.tokenizer.extractNextTokenAsString();
+
+        const args: ASTExpression[] = [];
+
+        if (this.tokenizer.peekNextTokenType([TokenType.WithArg]) !== false) {
+            this.tokenizer.extractTokenType([TokenType.WithArg]);
+            while (true) {
+                args.push(this.createExpression());
+
+                if (this.tokenizer.peekNextTokenType([TokenType.Comma]) !== false) {
+                    this.tokenizer.extractTokenType([TokenType.Comma]);
+                } else {
+                    break;
+                }
+            }
+        }
+
+        let targetVariableName: string | undefined = undefined;
+
+        if (this.tokenizer.peekNextTokenType([TokenType.ThenPutResultInto]) !== false) {
+            this.tokenizer.extractTokenType([TokenType.ThenPutResultInto]);
+            targetVariableName = this.tokenizer.extractNextTokenAsString();
+        }
+
+        return {
+            type: 'FunctionCall',
+            functionName: functionName,
+            callArguments: args,
+            resultTarget: targetVariableName
+        };
+    }
+
     public createStatements(): ASTStatement[] {
         const statements: ASTStatement[] = [];
 
@@ -469,6 +504,8 @@ export class Parser {
                 return this.createWhileLoop();
             case TokenType.For:
                 return this.createForLoop();
+            case TokenType.FunctionCall:
+                return this.createFunctionCall();
         }
 
         throw this.createErrorInvalidToken(statementType);

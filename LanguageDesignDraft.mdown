@@ -74,6 +74,8 @@ _forLoop_ -> For _variable_ from _expression_ to _expression_ do _statements_ En
 
 ## Function
 
+### Function Declaration
+
 _param_ -> _variableName_ as _variableTypeProperty_
 
 _paramsChain_ -> _param_
@@ -91,6 +93,22 @@ _returnType_ -> EPSILON
 _functionDeclaration_ -> Define function _functionName_ _functionParams_ _returnType do _statementsInFunction_ End of function
 
 _returnStatement_ -> Return _expression_
+
+### Function Call
+
+_argsChain_ -> EPSILON
+
+_argsChain_ -> _expression_ , _argsChain_
+
+_functionArguments_ -> EPSILON
+
+_functionArguments_ -> with arg _argsChain_
+
+_returnValueTarget_ -> EPSILON
+
+_returnValueTarget_ -> then put result into _variableName_
+
+_functionCall_ -> Call function _functionName_ _functionArguments_ _returnValueTarget_
 
 ## Expression
 

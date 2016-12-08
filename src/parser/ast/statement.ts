@@ -59,6 +59,13 @@ export interface ASTForBlock {
     statements: ASTStatement[];
 }
 
+export interface ASTFunctionCall {
+    type: 'FunctionCall';
+    functionName: string;
+    callArguments: ASTExpression[];
+    resultTarget: string | undefined;
+}
+
 export type ASTStatement =
     ASTVariableDeclaration |
     ASTAssignmentSet |
@@ -67,4 +74,5 @@ export type ASTStatement =
     ASTPrintStatement |
     ASTIfBlock |
     ASTWhileBlock |
-    ASTForBlock;
+    ASTForBlock |
+    ASTFunctionCall;
