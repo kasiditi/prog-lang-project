@@ -20,11 +20,30 @@ export interface TokenMatcher {
     extractStringLiteral(): string | false;
 }
 
+class ExpectedTokenSet {
+    private tokenStringSet = new Set<string>();
+
+    public addExpectedToken(tokenString: string) {
+        this.tokenStringSet.add(tokenString);
+    }
+
+    public clear() {
+        this.tokenStringSet.clear();
+    }
+
+    public getExpectedTokenStringList(): string[] {
+        const l: string[] = [];
+        this.tokenStringSet.forEach(token => l.push(token));
+        return l;
+    }
+}
+
 export class TokenMatcherImpl implements TokenMatcher {
     private rulesMap = new Map<TokenType, string>();
     private position = 0;
+    private expectedErrorReportSet = new ExpectedTokenSet();
 
-    public constructor(private sourceCode: string, matchingRules = MATCHING_RULES) {
+    public constructor(private sourceCode: string, private matchingRules = MATCHING_RULES) {
         for (let rule of matchingRules) {
             this.rulesMap.set(rule.tokenType, rule.matcher);
         }
@@ -81,31 +100,31 @@ export class TokenMatcherImpl implements TokenMatcher {
             if (token === TokenType.EndOfFile) {
                 const nextPos = this.getNextNonWhitespacePosition();
                 if (this.isEndOfFile(nextPos)) {
+                    this.expectedErrorReportSet.clear();
                     return {
                         token: token,
                         nextPosition: nextPos
                     };
+                } else {
+                    this.expectedErrorReportSet.addExpectedToken('(EOF)');
                 }
             } else {
                 const matcher = this.rulesMap.get(token);
                 const matchResult = this.checkForMatch(matcher);
 
                 if (matchResult.isMatch === true) {
+                    this.expectedErrorReportSet.clear();
                     return {
                         token: token,
                         nextPosition: matchResult.newPosition
                     };
+                } else {
+                    this.expectedErrorReportSet.addExpectedToken(matcher);
                 }
             }
         }
 
-        const expectStr = expectedTokens.map(token => {
-            if (token === TokenType.EndOfFile) {
-                return 'EOF';
-            } else {
-                return this.rulesMap.get(token);
-            }
-        }).join(' | ');
+        const expectStr = this.expectedErrorReportSet.getExpectedTokenStringList().join(' | ');
         throw this.makeError(this.position, `Expected: ${expectStr}.`);
     }
 
@@ -124,14 +143,23 @@ export class TokenMatcherImpl implements TokenMatcher {
     }
 
     private getNextTokenAsString(): { token: string; nextPosition: number; } {
+        this.expectedErrorReportSet.clear();
+
         const startPos = this.getNextNonWhitespacePosition();
         if (this.isEndOfFile(startPos)) {
-            throw this.makeError(startPos, `Expected a token.`);
+            throw this.makeError(startPos, `Unexpected EOF.`);
         }
         const endPos = this.getNextWhitespacePosition(startPos);
 
+        const token = this.sourceCode.slice(startPos, endPos);
+        for (let rule of this.matchingRules) {
+            if (rule.matcher === token) {
+                throw this.makeError(startPos, `Unexpected identifier "${token}".`);
+            }
+        }
+
         return {
-            token: this.sourceCode.slice(startPos, endPos),
+            token,
             nextPosition: endPos
         };
     }
@@ -151,6 +179,8 @@ export class TokenMatcherImpl implements TokenMatcher {
     }
 
     public extractStringLiteral(): string | false {
+        this.expectedErrorReportSet.clear();
+
         const startPos = this.getNextNonWhitespacePosition();
         if (this.isEndOfFile(startPos)) {
             return false;

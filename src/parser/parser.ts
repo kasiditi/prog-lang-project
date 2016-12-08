@@ -191,9 +191,11 @@ export class Parser {
 
         // Check for string
         const tokenStr = this.tokenizer.extractStringLiteral();
+
         if (tokenStr === false) {
             throw new Error('Invalid expression.');
         }
+
         const atom: ASTExpressionAtomString = {
             type: 'ExpressionAtom',
             atomType: 'String',
