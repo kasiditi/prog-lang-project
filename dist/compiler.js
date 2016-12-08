@@ -238,7 +238,7 @@ var TokenMatcherImpl = (function () {
         var token = this.sourceCode.slice(startPos, endPos);
         for (var _i = 0, _a = this.matchingRules; _i < _a.length; _i++) {
             var rule = _a[_i];
-            if (rule.matcher === token) {
+            if (rule.matcher.substr(0, token.length) === token) {
                 throw this.makeError(startPos, "Unexpected identifier \"" + token + "\".");
             }
         }
