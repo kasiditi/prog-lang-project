@@ -34,8 +34,6 @@ const STATEMENT_FIRST_SET = [
     TokenType.Set,
     TokenType.Increase,
     TokenType.Decrease,
-    TokenType.Multiply,
-    TokenType.Divide,
     TokenType.Print,
     TokenType.If,
     TokenType.While,

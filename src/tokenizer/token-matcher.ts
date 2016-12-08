@@ -1,5 +1,6 @@
-import { TokenType } from './token-type';
+import { LineMapper } from './line-mapper';
 import { MATCHING_RULES } from './matching-rule';
+import { TokenType } from './token-type';
 
 interface PositiveMatchCheckingResult {
     isMatch: true;
@@ -34,6 +35,7 @@ class ExpectedTokenSet {
     public getExpectedTokenStringList(): string[] {
         const l: string[] = [];
         this.tokenStringSet.forEach(token => l.push(token));
+        l.sort();
         return l;
     }
 }
@@ -42,15 +44,18 @@ export class TokenMatcherImpl implements TokenMatcher {
     private rulesMap = new Map<TokenType, string>();
     private position = 0;
     private expectedErrorReportSet = new ExpectedTokenSet();
+    private lineMapper: LineMapper;
 
     public constructor(private sourceCode: string, private matchingRules = MATCHING_RULES) {
         for (let rule of matchingRules) {
             this.rulesMap.set(rule.tokenType, rule.matcher);
         }
+        this.lineMapper = new LineMapper(sourceCode);
     }
 
     private makeError(position: number, message: string): Error {
-        return new Error(`Position: ${position}.\n${message}`);
+        const lineCol = this.lineMapper.getLineAndCol(position);
+        return new Error(`L${lineCol.line}:C${lineCol.col}\n${message}`);
     }
 
     private isEndOfFile(curPos = this.position) {
@@ -76,7 +81,7 @@ export class TokenMatcherImpl implements TokenMatcher {
 
         for (let i = 0; i < expectedMatcher.length; i++) {
             if (expectedMatcher.charAt(i) === ' ') {
-                curPos = this.getNextNonWhitespacePosition(curPos);
+                curPos = this.getNextNonWhitespacePosition(curPos + 1);
             } else {
                 if (this.isEndOfFile(curPos) ||
                     this.sourceCode.charAt(curPos).toLowerCase() !== expectedMatcher.charAt(i)) {

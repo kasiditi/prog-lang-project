@@ -4,6 +4,52 @@
     (factory((global.ProgLangCompiler = global.ProgLangCompiler || {})));
 }(this, (function (exports) { 'use strict';
 
+var LineMapper = (function () {
+    function LineMapper(sourceCode) {
+        this.sourceCode = sourceCode;
+        this.lineStartPos = [0];
+        var curPos = -1;
+        while (true) {
+            curPos = this.getNextNewlinePosition(curPos + 1);
+            if (curPos === -1) {
+                break;
+            }
+            this.lineStartPos.push(curPos);
+        }
+    }
+    LineMapper.prototype.getNextNewlinePosition = function (curPos) {
+        var pos = this.sourceCode.indexOf('\r', curPos);
+        if (pos !== -1) {
+            return pos;
+        }
+        pos = this.sourceCode.indexOf('\n', curPos);
+        if (pos !== -1) {
+            return pos;
+        }
+        pos = this.sourceCode.indexOf('\r\n', curPos);
+        if (pos !== -1) {
+            return pos;
+        }
+        return -1;
+    };
+    LineMapper.prototype.getLineAndCol = function (pos) {
+        // TODO: Use binary search instead
+        for (var i = 0; i < this.lineStartPos.length; i++) {
+            if (pos < this.lineStartPos[i]) {
+                return {
+                    line: i,
+                    col: pos - this.lineStartPos[i - 1]
+                };
+            }
+        }
+        return {
+            line: this.lineStartPos.length,
+            col: pos - this.lineStartPos[this.lineStartPos.length - 1]
+        };
+    };
+    return LineMapper;
+}());
+
 var TokenType;
 (function (TokenType) {
     TokenType[TokenType["Plus"] = 0] = "Plus";
@@ -121,6 +167,7 @@ var ExpectedTokenSet = (function () {
     ExpectedTokenSet.prototype.getExpectedTokenStringList = function () {
         var l = [];
         this.tokenStringSet.forEach(function (token) { return l.push(token); });
+        l.sort();
         return l;
     };
     return ExpectedTokenSet;
@@ -137,9 +184,11 @@ var TokenMatcherImpl = (function () {
             var rule = matchingRules_1[_i];
             this.rulesMap.set(rule.tokenType, rule.matcher);
         }
+        this.lineMapper = new LineMapper(sourceCode);
     }
     TokenMatcherImpl.prototype.makeError = function (position, message) {
-        return new Error("Position: " + position + ".\n" + message);
+        var lineCol = this.lineMapper.getLineAndCol(position);
+        return new Error("L" + lineCol.line + ":C" + lineCol.col + "\n" + message);
     };
     TokenMatcherImpl.prototype.isEndOfFile = function (curPos) {
         if (curPos === void 0) { curPos = this.position; }
@@ -163,7 +212,7 @@ var TokenMatcherImpl = (function () {
         var curPos = this.getNextNonWhitespacePosition(this.position);
         for (var i = 0; i < expectedMatcher.length; i++) {
             if (expectedMatcher.charAt(i) === ' ') {
-                curPos = this.getNextNonWhitespacePosition(curPos);
+                curPos = this.getNextNonWhitespacePosition(curPos + 1);
             }
             else {
                 if (this.isEndOfFile(curPos) ||
@@ -318,8 +367,6 @@ var STATEMENT_FIRST_SET = [
     TokenType.Set,
     TokenType.Increase,
     TokenType.Decrease,
-    TokenType.Multiply,
-    TokenType.Divide,
     TokenType.Print,
     TokenType.If,
     TokenType.While,
