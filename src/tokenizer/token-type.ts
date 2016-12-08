@@ -35,6 +35,7 @@ export enum TokenType {
     Otherwise,
     Print,
     Set,
+    ThatReturn,
     To,
     ToBe,
     VariableDeclaration,

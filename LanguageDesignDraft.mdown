@@ -78,13 +78,19 @@ _param_ -> _variableName_ as _variableTypeProperty_
 
 _paramsChain_ -> _param_
 
-_paramsChain_ -> _paramsChain_, _param_
+_paramsChain_ -> _param_ , _paramsChain_
 
 _functionParams_ -> with param _paramsChain_
 
 _functionParams_ -> EPSILON
 
-_functionDeclaration_ -> Define function _functionName_ _functionParams_ do _statements_ End of function
+_returnType_ -> that return _variableType_
+
+_returnType_ -> EPSILON
+
+_functionDeclaration_ -> Define function _functionName_ _functionParams_ _returnType do _statementsInFunction_ End of function
+
+_returnStatement_ -> Return _expression_
 
 ## Expression
 
@@ -159,6 +165,12 @@ _statement_ -> _whileLoop_
 _statement_ -> _forLoop_
 
 _statements_ -> _statement_ _statements_
+
+_statementInFunction_ -> _returnStatement_
+
+_statementInFunction_ -> _statement_
+
+_statementsInFunction_ -> _statementInFunction_ _statementsInFunction_
 
 ## Program
 

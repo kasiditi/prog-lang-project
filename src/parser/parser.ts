@@ -1,6 +1,8 @@
+import { VariableTypeInfo } from './ast/variable-type-info';
 import { TokenMatcher, TokenMatcherImpl } from '../tokenizer/token-matcher';
 import { TokenType } from '../tokenizer/token-type';
-import { ASTFunction, ASTProgram } from './ast';
+import { ASTFunction, ASTFunctionParameter } from './ast/function';
+import { ASTProgram } from './ast/program';
 import {
     ASTExpression,
     ASTExpressionAtom,
@@ -10,7 +12,7 @@ import {
     ASTExpressionAtomVariable,
     ASTExpressionWithOneOperand,
     ASTExpressionWithTwoOperand
-} from './ast-expression';
+} from './ast/expression';
 import {
     ASTAssignment,
     ASTAssignmentDecrease,
@@ -22,9 +24,9 @@ import {
     ASTStatement,
     ASTVariableDeclaration,
     ASTWhileBlock
-} from './ast-statement';
-import { ExpressionOperator } from './expression-operator';
-import { VariableType } from './variable-type';
+} from './ast/statement';
+import { ExpressionOperator } from './ast/expression-operator';
+import { VariableType } from './ast/variable-type';
 
 const STATEMENT_FIRST_SET = [
     TokenType.VariableDeclaration,
@@ -67,6 +69,8 @@ const OPERATOR_WITH_TWO_OPERANDS_FIRST_SET = [
     TokenType.Or,
 ];
 
+const VARIABLE_NAME_REG_EXP = /^[a-zA-Z][a-zA-Z0-9-_]*$/;
+
 export class Parser {
     public static parseSourceCode(sourceCode: string) {
         const tokenMatcher = new TokenMatcherImpl(sourceCode);
@@ -101,7 +105,49 @@ export class Parser {
     }
 
     public createFunction(): ASTFunction {
-        throw this.createErrorInvalidToken(TokenType.FunctionDeclaration, 'Function is not supported yet.');
+        const functionName = this.tokenizer.extractNextTokenAsString();
+
+        const parameters: ASTFunctionParameter[] = [];
+
+        if (this.tokenizer.peekNextTokenType([TokenType.WithParam]) !== false) {
+            this.tokenizer.extractTokenType([TokenType.WithParam]);
+            while (true) {
+                const name = this.tokenizer.extractNextTokenAsString();
+                this.tokenizer.extractTokenType([TokenType.As]);
+                const typeInfo = this.createVariableTypeInfoIfAny();
+
+                if (typeInfo === undefined) {
+                    throw new Error(`Parameter "${name}" of function "${functionName}" requires a type.`);
+                }
+
+                parameters.push({ name, typeInfo });
+
+                if (this.tokenizer.peekNextTokenType([TokenType.Comma]) !== false) {
+                    this.tokenizer.extractTokenType([TokenType.Comma]);
+                } else {
+                    break;
+                }
+            }
+        }
+
+        let returnType: VariableType | undefined = undefined;
+
+        if (this.tokenizer.peekNextTokenType([TokenType.ThatReturn]) !== false) {
+            this.tokenizer.extractTokenType([TokenType.ThatReturn]);
+            returnType = this.createVariableType();
+        }
+
+        this.tokenizer.extractTokenType([TokenType.Do]);
+        const statements = this.createStatements();
+        this.tokenizer.extractTokenType([TokenType.EndOfFunction]);
+
+        return {
+            type: 'Function',
+            functionName,
+            parameters,
+            returnType,
+            statements
+        };
     }
 
     private createExpressionAtom(): ASTExpressionAtom {
@@ -130,7 +176,7 @@ export class Parser {
                 return atom;
             }
             // Check for variable name
-            if (/^[a-zA-Z0-9-_]+$/.test(token)) {
+            if (VARIABLE_NAME_REG_EXP.test(token)) {
                 this.tokenizer.extractNextTokenAsString();
                 const atom: ASTExpressionAtomVariable = {
                     type: 'ExpressionAtom',
@@ -205,66 +251,67 @@ export class Parser {
         }
     }
 
-    private createVariableDeclaration(): ASTVariableDeclaration {
-        const variableName = this.tokenizer.extractNextTokenAsString();
-        this.tokenizer.extractTokenType([TokenType.ToBe]);
+    private createVariableType(): VariableType {
+        const token = this.tokenizer.extractTokenType(VARIABLE_TYPE_FIRST_SET);
+        let variableType: VariableType;
 
-        let isMutable = false;
-        let variableType: VariableType | undefined = undefined;
-        let initialValue: ASTExpression | undefined = undefined;
-
-        let token = this.tokenizer.extractTokenType([
-            TokenType.EqualTo,
-            TokenType.InitializedTo,
-            TokenType.Mutable,
-            ...VARIABLE_TYPE_FIRST_SET,
-        ]);
-
-        if (token === TokenType.Mutable) {
-            isMutable = true;
-            const nextToken = this.tokenizer.extractTokenType(VARIABLE_TYPE_FIRST_SET);
-            switch (nextToken) {
-                case TokenType.VariableTypeNumber:
-                    variableType = VariableType.Number;
-                    break;
-                case TokenType.VariableTypeString:
-                    variableType = VariableType.String;
-                    break;
-                case TokenType.VariableTypeBoolean:
-                    variableType = VariableType.Boolean;
-                    break;
-                default:
-                    throw this.createErrorInvalidToken(nextToken);
-            }
-        } else if (token === TokenType.VariableTypeNumber) {
+        if (token === TokenType.VariableTypeNumber) {
             variableType = VariableType.Number;
         } else if (token === TokenType.VariableTypeString) {
             variableType = VariableType.String;
         } else if (token === TokenType.VariableTypeBoolean) {
             variableType = VariableType.Boolean;
+        } else {
+            throw this.createErrorInvalidToken(token);
         }
 
-        if (token === TokenType.Mutable ||
-            token === TokenType.VariableTypeNumber ||
-            token === TokenType.VariableTypeString ||
-            token === TokenType.VariableTypeBoolean) {
-            const initFirstSet = [TokenType.EqualTo, TokenType.InitializedTo];
+        return variableType;
+    }
 
-            if (this.tokenizer.peekNextTokenType(initFirstSet) !== false) {
-                token = this.tokenizer.extractTokenType(initFirstSet);
+    private createVariableTypeInfoIfAny(): VariableTypeInfo | undefined {
+        let variableType: VariableType;
+
+        if (this.tokenizer.peekNextTokenType([TokenType.Mutable])) {
+            this.tokenizer.extractTokenType([TokenType.Mutable]);
+            return {
+                isMutable: true,
+                variableType: this.createVariableType()
+            };
+        } else {
+            try {
+                let variableType = this.createVariableType();
+                return {
+                    isMutable: false,
+                    variableType
+                };
+            } catch (e) {
+                return undefined;
             }
         }
+    }
 
-        if (token === TokenType.EqualTo || token === TokenType.InitializedTo) {
+    private createVariableDeclaration(): ASTVariableDeclaration {
+        const variableName = this.tokenizer.extractNextTokenAsString();
+        this.tokenizer.extractTokenType([TokenType.ToBe]);
+
+        const variableTypeInfo = this.createVariableTypeInfoIfAny();
+
+        let initialValue: ASTExpression | undefined = undefined;
+        const initFirstSet = [TokenType.EqualTo, TokenType.InitializedTo];
+        if (this.tokenizer.peekNextTokenType(initFirstSet) !== false) {
+            this.tokenizer.extractTokenType(initFirstSet);
             initialValue = this.createExpression();
+        }
+
+        if (variableTypeInfo === undefined && initialValue === undefined) {
+            throw new Error('Variable declaration must either have a type or initial value.');
         }
 
         return {
             type: 'VariableDeclaration',
-            variableName: variableName,
-            variableType: variableType,
-            isMutable: isMutable,
-            value: initialValue
+            variableName,
+            variableTypeInfo,
+            initialValue
         };
     }
 
@@ -388,8 +435,7 @@ export class Parser {
     }
 
     public createStatements(): ASTStatement[] {
-        // It should have at least one statement
-        const statements = [this.createStatement()];
+        const statements: ASTStatement[] = [];
 
         while (true) {
             const statementType = this.tokenizer.peekNextTokenType(STATEMENT_FIRST_SET);

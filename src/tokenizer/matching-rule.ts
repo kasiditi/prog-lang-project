@@ -6,13 +6,13 @@ export interface MatchingRule {
 }
 
 export const MATCHING_RULES: MatchingRule[] = [
+    { matcher: ',', tokenType: TokenType.Comma },
     { matcher: 'plus', tokenType: TokenType.Plus },
     { matcher: 'and', tokenType: TokenType.And },
     { matcher: 'as', tokenType: TokenType.As },
     { matcher: 'boolean', tokenType: TokenType.VariableTypeBoolean },
     { matcher: 'but if', tokenType: TokenType.ButIf },
     { matcher: 'by', tokenType: TokenType.By },
-    { matcher: 'comma', tokenType: TokenType.Comma },
     { matcher: 'decrease', tokenType: TokenType.Decrease },
     { matcher: 'define function', tokenType: TokenType.FunctionDeclaration },
     { matcher: 'define variable', tokenType: TokenType.VariableDeclaration },
@@ -45,6 +45,7 @@ export const MATCHING_RULES: MatchingRule[] = [
     { matcher: 'print', tokenType: TokenType.Print },
     { matcher: 'set', tokenType: TokenType.Set },
     { matcher: 'string', tokenType: TokenType.VariableTypeString },
+    { matcher: 'that return', tokenType: TokenType.ThatReturn },
     { matcher: 'to', tokenType: TokenType.To },
     { matcher: 'to be', tokenType: TokenType.ToBe },
     { matcher: 'true', tokenType: TokenType.BooleanValueTrue },

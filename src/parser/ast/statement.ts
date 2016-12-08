@@ -1,12 +1,12 @@
-import { ASTExpression } from './ast-expression';
+import { VariableTypeInfo } from './variable-type-info';
+import { ASTExpression } from './expression';
 import { VariableType } from './variable-type';
 
 export interface ASTVariableDeclaration {
     type: 'VariableDeclaration';
     variableName: string;
-    variableType: VariableType | undefined;
-    value: ASTExpression | undefined;
-    isMutable: boolean;
+    variableTypeInfo: VariableTypeInfo | undefined;
+    initialValue: ASTExpression | undefined;
 }
 
 interface BaseASTAssignment {
