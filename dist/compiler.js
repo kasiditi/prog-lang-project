@@ -13,54 +13,59 @@ var TokenType;
     TokenType[TokenType["BooleanValueTrue"] = 4] = "BooleanValueTrue";
     TokenType[TokenType["ButIf"] = 5] = "ButIf";
     TokenType[TokenType["By"] = 6] = "By";
-    TokenType[TokenType["Comma"] = 7] = "Comma";
-    TokenType[TokenType["Decrease"] = 8] = "Decrease";
-    TokenType[TokenType["Divide"] = 9] = "Divide";
-    TokenType[TokenType["Do"] = 10] = "Do";
-    TokenType[TokenType["EndOfFile"] = 11] = "EndOfFile";
-    TokenType[TokenType["EndOfFor"] = 12] = "EndOfFor";
-    TokenType[TokenType["EndOfFunction"] = 13] = "EndOfFunction";
-    TokenType[TokenType["EndOfIf"] = 14] = "EndOfIf";
-    TokenType[TokenType["EndOfWhile"] = 15] = "EndOfWhile";
-    TokenType[TokenType["EqualTo"] = 16] = "EqualTo";
-    TokenType[TokenType["For"] = 17] = "For";
-    TokenType[TokenType["From"] = 18] = "From";
-    TokenType[TokenType["FunctionDeclaration"] = 19] = "FunctionDeclaration";
-    TokenType[TokenType["GreaterThan"] = 20] = "GreaterThan";
-    TokenType[TokenType["GreaterThanOrEqualTo"] = 21] = "GreaterThanOrEqualTo";
-    TokenType[TokenType["If"] = 22] = "If";
-    TokenType[TokenType["Increase"] = 23] = "Increase";
-    TokenType[TokenType["LessThan"] = 24] = "LessThan";
-    TokenType[TokenType["LessThanOrEqualTo"] = 25] = "LessThanOrEqualTo";
-    TokenType[TokenType["Minus"] = 26] = "Minus";
-    TokenType[TokenType["Modulo"] = 27] = "Modulo";
-    TokenType[TokenType["Multiply"] = 28] = "Multiply";
-    TokenType[TokenType["Mutable"] = 29] = "Mutable";
-    TokenType[TokenType["Not"] = 30] = "Not";
-    TokenType[TokenType["NotEqualTo"] = 31] = "NotEqualTo";
-    TokenType[TokenType["Or"] = 32] = "Or";
-    TokenType[TokenType["Otherwise"] = 33] = "Otherwise";
-    TokenType[TokenType["Print"] = 34] = "Print";
-    TokenType[TokenType["Set"] = 35] = "Set";
-    TokenType[TokenType["To"] = 36] = "To";
-    TokenType[TokenType["ToBe"] = 37] = "ToBe";
-    TokenType[TokenType["VariableDeclaration"] = 38] = "VariableDeclaration";
-    TokenType[TokenType["InitializedTo"] = 39] = "InitializedTo";
-    TokenType[TokenType["VariableTypeBoolean"] = 40] = "VariableTypeBoolean";
-    TokenType[TokenType["VariableTypeNumber"] = 41] = "VariableTypeNumber";
-    TokenType[TokenType["VariableTypeString"] = 42] = "VariableTypeString";
-    TokenType[TokenType["While"] = 43] = "While";
-    TokenType[TokenType["WithParam"] = 44] = "WithParam";
+    TokenType[TokenType["FunctionCall"] = 7] = "FunctionCall";
+    TokenType[TokenType["Comma"] = 8] = "Comma";
+    TokenType[TokenType["Decrease"] = 9] = "Decrease";
+    TokenType[TokenType["Divide"] = 10] = "Divide";
+    TokenType[TokenType["Do"] = 11] = "Do";
+    TokenType[TokenType["EndOfFile"] = 12] = "EndOfFile";
+    TokenType[TokenType["EndOfFor"] = 13] = "EndOfFor";
+    TokenType[TokenType["EndOfFunction"] = 14] = "EndOfFunction";
+    TokenType[TokenType["EndOfIf"] = 15] = "EndOfIf";
+    TokenType[TokenType["EndOfWhile"] = 16] = "EndOfWhile";
+    TokenType[TokenType["EqualTo"] = 17] = "EqualTo";
+    TokenType[TokenType["For"] = 18] = "For";
+    TokenType[TokenType["From"] = 19] = "From";
+    TokenType[TokenType["FunctionDeclaration"] = 20] = "FunctionDeclaration";
+    TokenType[TokenType["GreaterThan"] = 21] = "GreaterThan";
+    TokenType[TokenType["GreaterThanOrEqualTo"] = 22] = "GreaterThanOrEqualTo";
+    TokenType[TokenType["If"] = 23] = "If";
+    TokenType[TokenType["Increase"] = 24] = "Increase";
+    TokenType[TokenType["LessThan"] = 25] = "LessThan";
+    TokenType[TokenType["LessThanOrEqualTo"] = 26] = "LessThanOrEqualTo";
+    TokenType[TokenType["Minus"] = 27] = "Minus";
+    TokenType[TokenType["Modulo"] = 28] = "Modulo";
+    TokenType[TokenType["Multiply"] = 29] = "Multiply";
+    TokenType[TokenType["Mutable"] = 30] = "Mutable";
+    TokenType[TokenType["Not"] = 31] = "Not";
+    TokenType[TokenType["NotEqualTo"] = 32] = "NotEqualTo";
+    TokenType[TokenType["Or"] = 33] = "Or";
+    TokenType[TokenType["Otherwise"] = 34] = "Otherwise";
+    TokenType[TokenType["Print"] = 35] = "Print";
+    TokenType[TokenType["Set"] = 36] = "Set";
+    TokenType[TokenType["ThatReturn"] = 37] = "ThatReturn";
+    TokenType[TokenType["ThenPutResultInto"] = 38] = "ThenPutResultInto";
+    TokenType[TokenType["To"] = 39] = "To";
+    TokenType[TokenType["ToBe"] = 40] = "ToBe";
+    TokenType[TokenType["VariableDeclaration"] = 41] = "VariableDeclaration";
+    TokenType[TokenType["InitializedTo"] = 42] = "InitializedTo";
+    TokenType[TokenType["VariableTypeBoolean"] = 43] = "VariableTypeBoolean";
+    TokenType[TokenType["VariableTypeNumber"] = 44] = "VariableTypeNumber";
+    TokenType[TokenType["VariableTypeString"] = 45] = "VariableTypeString";
+    TokenType[TokenType["While"] = 46] = "While";
+    TokenType[TokenType["WithParam"] = 47] = "WithParam";
+    TokenType[TokenType["WithArg"] = 48] = "WithArg";
 })(TokenType || (TokenType = {}));
 
 var MATCHING_RULES = [
+    { matcher: ',', tokenType: TokenType.Comma },
     { matcher: 'plus', tokenType: TokenType.Plus },
     { matcher: 'and', tokenType: TokenType.And },
     { matcher: 'as', tokenType: TokenType.As },
     { matcher: 'boolean', tokenType: TokenType.VariableTypeBoolean },
     { matcher: 'but if', tokenType: TokenType.ButIf },
     { matcher: 'by', tokenType: TokenType.By },
-    { matcher: 'comma', tokenType: TokenType.Comma },
+    { matcher: 'call function', tokenType: TokenType.FunctionCall },
     { matcher: 'decrease', tokenType: TokenType.Decrease },
     { matcher: 'define function', tokenType: TokenType.FunctionDeclaration },
     { matcher: 'define variable', tokenType: TokenType.VariableDeclaration },
@@ -93,19 +98,41 @@ var MATCHING_RULES = [
     { matcher: 'print', tokenType: TokenType.Print },
     { matcher: 'set', tokenType: TokenType.Set },
     { matcher: 'string', tokenType: TokenType.VariableTypeString },
+    { matcher: 'that return', tokenType: TokenType.ThatReturn },
+    { matcher: 'then put result into', tokenType: TokenType.ThenPutResultInto },
     { matcher: 'to', tokenType: TokenType.To },
     { matcher: 'to be', tokenType: TokenType.ToBe },
     { matcher: 'true', tokenType: TokenType.BooleanValueTrue },
     { matcher: 'while', tokenType: TokenType.While },
     { matcher: 'with param', tokenType: TokenType.WithParam },
+    { matcher: 'with arg', tokenType: TokenType.WithArg }
 ];
 
+var ExpectedTokenSet = (function () {
+    function ExpectedTokenSet() {
+        this.tokenStringSet = new Set();
+    }
+    ExpectedTokenSet.prototype.addExpectedToken = function (tokenString) {
+        this.tokenStringSet.add(tokenString);
+    };
+    ExpectedTokenSet.prototype.clear = function () {
+        this.tokenStringSet.clear();
+    };
+    ExpectedTokenSet.prototype.getExpectedTokenStringList = function () {
+        var l = [];
+        this.tokenStringSet.forEach(function (token) { return l.push(token); });
+        return l;
+    };
+    return ExpectedTokenSet;
+}());
 var TokenMatcherImpl = (function () {
     function TokenMatcherImpl(sourceCode, matchingRules) {
         if (matchingRules === void 0) { matchingRules = MATCHING_RULES; }
         this.sourceCode = sourceCode;
+        this.matchingRules = matchingRules;
         this.rulesMap = new Map();
         this.position = 0;
+        this.expectedErrorReportSet = new ExpectedTokenSet();
         for (var _i = 0, matchingRules_1 = matchingRules; _i < matchingRules_1.length; _i++) {
             var rule = matchingRules_1[_i];
             this.rulesMap.set(rule.tokenType, rule.matcher);
@@ -155,37 +182,37 @@ var TokenMatcherImpl = (function () {
         return { isMatch: true, newPosition: newCurPos };
     };
     TokenMatcherImpl.prototype.getNextTokenType = function (expectedTokens) {
-        var _this = this;
         for (var _i = 0, expectedTokens_1 = expectedTokens; _i < expectedTokens_1.length; _i++) {
             var token = expectedTokens_1[_i];
             if (token === TokenType.EndOfFile) {
                 var nextPos = this.getNextNonWhitespacePosition();
                 if (this.isEndOfFile(nextPos)) {
+                    this.expectedErrorReportSet.clear();
                     return {
                         token: token,
                         nextPosition: nextPos
                     };
+                }
+                else {
+                    this.expectedErrorReportSet.addExpectedToken('(EOF)');
                 }
             }
             else {
                 var matcher = this.rulesMap.get(token);
                 var matchResult = this.checkForMatch(matcher);
                 if (matchResult.isMatch === true) {
+                    this.expectedErrorReportSet.clear();
                     return {
                         token: token,
                         nextPosition: matchResult.newPosition
                     };
                 }
+                else {
+                    this.expectedErrorReportSet.addExpectedToken(matcher);
+                }
             }
         }
-        var expectStr = expectedTokens.map(function (token) {
-            if (token === TokenType.EndOfFile) {
-                return 'EOF';
-            }
-            else {
-                return _this.rulesMap.get(token);
-            }
-        }).join(' | ');
+        var expectStr = this.expectedErrorReportSet.getExpectedTokenStringList().join(' | ');
         throw this.makeError(this.position, "Expected: " + expectStr + ".");
     };
     TokenMatcherImpl.prototype.peekNextTokenType = function (expectedTokens) {
@@ -202,13 +229,21 @@ var TokenMatcherImpl = (function () {
         return result.token;
     };
     TokenMatcherImpl.prototype.getNextTokenAsString = function () {
+        this.expectedErrorReportSet.clear();
         var startPos = this.getNextNonWhitespacePosition();
         if (this.isEndOfFile(startPos)) {
-            throw this.makeError(startPos, "Expected a token.");
+            throw this.makeError(startPos, "Unexpected EOF.");
         }
         var endPos = this.getNextWhitespacePosition(startPos);
+        var token = this.sourceCode.slice(startPos, endPos);
+        for (var _i = 0, _a = this.matchingRules; _i < _a.length; _i++) {
+            var rule = _a[_i];
+            if (rule.matcher === token) {
+                throw this.makeError(startPos, "Unexpected identifier \"" + token + "\".");
+            }
+        }
         return {
-            token: this.sourceCode.slice(startPos, endPos),
+            token: token,
             nextPosition: endPos
         };
     };
@@ -226,6 +261,7 @@ var TokenMatcherImpl = (function () {
         }
     };
     TokenMatcherImpl.prototype.extractStringLiteral = function () {
+        this.expectedErrorReportSet.clear();
         var startPos = this.getNextNonWhitespacePosition();
         if (this.isEndOfFile(startPos)) {
             return false;
@@ -287,7 +323,8 @@ var STATEMENT_FIRST_SET = [
     TokenType.Print,
     TokenType.If,
     TokenType.While,
-    TokenType.For
+    TokenType.For,
+    TokenType.FunctionCall
 ];
 var PROGRAM_FIRST_SET = STATEMENT_FIRST_SET.concat([TokenType.FunctionDeclaration, TokenType.EndOfFile]);
 var VARIABLE_TYPE_FIRST_SET = [
@@ -314,6 +351,7 @@ var OPERATOR_WITH_TWO_OPERANDS_FIRST_SET = [
     TokenType.NotEqualTo,
     TokenType.Or,
 ];
+var VARIABLE_NAME_REG_EXP = /^[a-zA-Z][a-zA-Z0-9-_]*$/;
 var Parser = (function () {
     function Parser(tokenizer) {
         this.tokenizer = tokenizer;
@@ -344,7 +382,41 @@ var Parser = (function () {
         return programAST;
     };
     Parser.prototype.createFunction = function () {
-        throw this.createErrorInvalidToken(TokenType.FunctionDeclaration, 'Function is not supported yet.');
+        var functionName = this.tokenizer.extractNextTokenAsString();
+        var parameters = [];
+        if (this.tokenizer.peekNextTokenType([TokenType.WithParam]) !== false) {
+            this.tokenizer.extractTokenType([TokenType.WithParam]);
+            while (true) {
+                var name_1 = this.tokenizer.extractNextTokenAsString();
+                this.tokenizer.extractTokenType([TokenType.As]);
+                var typeInfo = this.createVariableTypeInfoIfAny();
+                if (typeInfo === undefined) {
+                    throw new Error("Parameter \"" + name_1 + "\" of function \"" + functionName + "\" requires a type.");
+                }
+                parameters.push({ name: name_1, typeInfo: typeInfo });
+                if (this.tokenizer.peekNextTokenType([TokenType.Comma]) !== false) {
+                    this.tokenizer.extractTokenType([TokenType.Comma]);
+                }
+                else {
+                    break;
+                }
+            }
+        }
+        var returnType = undefined;
+        if (this.tokenizer.peekNextTokenType([TokenType.ThatReturn]) !== false) {
+            this.tokenizer.extractTokenType([TokenType.ThatReturn]);
+            returnType = this.createVariableType();
+        }
+        this.tokenizer.extractTokenType([TokenType.Do]);
+        var statements = this.createStatements();
+        this.tokenizer.extractTokenType([TokenType.EndOfFunction]);
+        return {
+            type: 'Function',
+            functionName: functionName,
+            parameters: parameters,
+            returnType: returnType,
+            statements: statements
+        };
     };
     Parser.prototype.createExpressionAtom = function () {
         // Check for boolean
@@ -371,7 +443,7 @@ var Parser = (function () {
                 return atom_2;
             }
             // Check for variable name
-            if (/^[a-zA-Z0-9-_]+$/.test(token)) {
+            if (VARIABLE_NAME_REG_EXP.test(token)) {
                 this.tokenizer.extractNextTokenAsString();
                 var atom_3 = {
                     type: 'ExpressionAtom',
@@ -466,35 +538,10 @@ var Parser = (function () {
             return atom;
         }
     };
-    Parser.prototype.createVariableDeclaration = function () {
-        var variableName = this.tokenizer.extractNextTokenAsString();
-        this.tokenizer.extractTokenType([TokenType.ToBe]);
-        var isMutable = false;
-        var variableType = undefined;
-        var initialValue = undefined;
-        var token = this.tokenizer.extractTokenType([
-            TokenType.EqualTo,
-            TokenType.InitializedTo,
-            TokenType.Mutable
-        ].concat(VARIABLE_TYPE_FIRST_SET));
-        if (token === TokenType.Mutable) {
-            isMutable = true;
-            var nextToken = this.tokenizer.extractTokenType(VARIABLE_TYPE_FIRST_SET);
-            switch (nextToken) {
-                case TokenType.VariableTypeNumber:
-                    variableType = VariableType.Number;
-                    break;
-                case TokenType.VariableTypeString:
-                    variableType = VariableType.String;
-                    break;
-                case TokenType.VariableTypeBoolean:
-                    variableType = VariableType.Boolean;
-                    break;
-                default:
-                    throw this.createErrorInvalidToken(nextToken);
-            }
-        }
-        else if (token === TokenType.VariableTypeNumber) {
+    Parser.prototype.createVariableType = function () {
+        var token = this.tokenizer.extractTokenType(VARIABLE_TYPE_FIRST_SET);
+        var variableType;
+        if (token === TokenType.VariableTypeNumber) {
             variableType = VariableType.Number;
         }
         else if (token === TokenType.VariableTypeString) {
@@ -503,24 +550,50 @@ var Parser = (function () {
         else if (token === TokenType.VariableTypeBoolean) {
             variableType = VariableType.Boolean;
         }
-        if (token === TokenType.Mutable ||
-            token === TokenType.VariableTypeNumber ||
-            token === TokenType.VariableTypeString ||
-            token === TokenType.VariableTypeBoolean) {
-            var initFirstSet = [TokenType.EqualTo, TokenType.InitializedTo];
-            if (this.tokenizer.peekNextTokenType(initFirstSet) !== false) {
-                token = this.tokenizer.extractTokenType(initFirstSet);
+        else {
+            throw this.createErrorInvalidToken(token);
+        }
+        return variableType;
+    };
+    Parser.prototype.createVariableTypeInfoIfAny = function () {
+        if (this.tokenizer.peekNextTokenType([TokenType.Mutable])) {
+            this.tokenizer.extractTokenType([TokenType.Mutable]);
+            return {
+                isMutable: true,
+                variableType: this.createVariableType()
+            };
+        }
+        else {
+            try {
+                var variableType = this.createVariableType();
+                return {
+                    isMutable: false,
+                    variableType: variableType
+                };
+            }
+            catch (e) {
+                return undefined;
             }
         }
-        if (token === TokenType.EqualTo || token === TokenType.InitializedTo) {
+    };
+    Parser.prototype.createVariableDeclaration = function () {
+        var variableName = this.tokenizer.extractNextTokenAsString();
+        this.tokenizer.extractTokenType([TokenType.ToBe]);
+        var variableTypeInfo = this.createVariableTypeInfoIfAny();
+        var initialValue = undefined;
+        var initFirstSet = [TokenType.EqualTo, TokenType.InitializedTo];
+        if (this.tokenizer.peekNextTokenType(initFirstSet) !== false) {
+            this.tokenizer.extractTokenType(initFirstSet);
             initialValue = this.createExpression();
+        }
+        if (variableTypeInfo === undefined && initialValue === undefined) {
+            throw new Error('Variable declaration must either have a type or initial value.');
         }
         return {
             type: 'VariableDeclaration',
             variableName: variableName,
-            variableType: variableType,
-            isMutable: isMutable,
-            value: initialValue
+            variableTypeInfo: variableTypeInfo,
+            initialValue: initialValue
         };
     };
     Parser.prototype.createAssignment = function (type) {
@@ -629,9 +702,35 @@ var Parser = (function () {
             elseBlockStatements: elseBlockStatement
         };
     };
+    Parser.prototype.createFunctionCall = function () {
+        var functionName = this.tokenizer.extractNextTokenAsString();
+        var args = [];
+        if (this.tokenizer.peekNextTokenType([TokenType.WithArg]) !== false) {
+            this.tokenizer.extractTokenType([TokenType.WithArg]);
+            while (true) {
+                args.push(this.createExpression());
+                if (this.tokenizer.peekNextTokenType([TokenType.Comma]) !== false) {
+                    this.tokenizer.extractTokenType([TokenType.Comma]);
+                }
+                else {
+                    break;
+                }
+            }
+        }
+        var targetVariableName = undefined;
+        if (this.tokenizer.peekNextTokenType([TokenType.ThenPutResultInto]) !== false) {
+            this.tokenizer.extractTokenType([TokenType.ThenPutResultInto]);
+            targetVariableName = this.tokenizer.extractNextTokenAsString();
+        }
+        return {
+            type: 'FunctionCall',
+            functionName: functionName,
+            callArguments: args,
+            resultTarget: targetVariableName
+        };
+    };
     Parser.prototype.createStatements = function () {
-        // It should have at least one statement
-        var statements = [this.createStatement()];
+        var statements = [];
         while (true) {
             var statementType = this.tokenizer.peekNextTokenType(STATEMENT_FIRST_SET);
             if (statementType !== false) {
@@ -662,6 +761,8 @@ var Parser = (function () {
                 return this.createWhileLoop();
             case TokenType.For:
                 return this.createForLoop();
+            case TokenType.FunctionCall:
+                return this.createFunctionCall();
         }
         throw this.createErrorInvalidToken(statementType);
     };

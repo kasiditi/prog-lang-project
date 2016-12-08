@@ -273,8 +273,6 @@ export class Parser {
     }
 
     private createVariableTypeInfoIfAny(): VariableTypeInfo | undefined {
-        let variableType: VariableType;
-
         if (this.tokenizer.peekNextTokenType([TokenType.Mutable])) {
             this.tokenizer.extractTokenType([TokenType.Mutable]);
             return {
