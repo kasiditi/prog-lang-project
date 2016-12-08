@@ -119,7 +119,7 @@ export class Parser {
                 const typeInfo = this.createVariableTypeInfoIfAny();
 
                 if (typeInfo === undefined) {
-                    throw new Error(`Parameter "${name}" of function "${functionName}" requires a type.`);
+                    throw new Error(`Parameter "${name}" of function "${functionName}" requires a valid type.`);
                 }
 
                 parameters.push({ name, typeInfo });

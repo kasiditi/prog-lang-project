@@ -238,7 +238,7 @@ var TokenMatcherImpl = (function () {
         var token = this.sourceCode.slice(startPos, endPos);
         for (var _i = 0, _a = this.matchingRules; _i < _a.length; _i++) {
             var rule = _a[_i];
-            if (rule.matcher.substr(0, token.length) === token.toLowerCase()) {
+            if (rule.matcher === token.toLowerCase()) {
                 throw this.makeError(startPos, "Unexpected identifier \"" + token + "\".");
             }
         }
@@ -391,7 +391,7 @@ var Parser = (function () {
                 this.tokenizer.extractTokenType([TokenType.As]);
                 var typeInfo = this.createVariableTypeInfoIfAny();
                 if (typeInfo === undefined) {
-                    throw new Error("Parameter \"" + name_1 + "\" of function \"" + functionName + "\" requires a type.");
+                    throw new Error("Parameter \"" + name_1 + "\" of function \"" + functionName + "\" requires a valid type.");
                 }
                 parameters.push({ name: name_1, typeInfo: typeInfo });
                 if (this.tokenizer.peekNextTokenType([TokenType.Comma]) !== false) {
