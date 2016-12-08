@@ -153,7 +153,7 @@ export class TokenMatcherImpl implements TokenMatcher {
 
         const token = this.sourceCode.slice(startPos, endPos);
         for (let rule of this.matchingRules) {
-            if (rule.matcher === token) {
+            if (rule.matcher.substr(0, token.length) === token) {
                 throw this.makeError(startPos, `Unexpected identifier "${token}".`);
             }
         }
